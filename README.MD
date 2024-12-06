@@ -47,11 +47,11 @@ The **Black-Scholes model** is a mathematical model for pricing European-style o
 The formula for a European call option is:
 
 
-![Equation](https://latex.codecogs.com/svg.image?%5C%5BC=S_0%20N(d_1)-K%20e%5E%7B-r%20T%7DN(d_2)%5C%5D)
+![Equation](https://latex.codecogs.com/svg.image?%5C%5BC=S_0%20N(d_1)-K%20e%5E%7B-r%20T%7DN(d_2))
 
 For a put option:
 
-![Equation](https://latex.codecogs.com/svg.image?%5C%5BP=K%20e%5E%7B-r%20T%7DN(-d_2)-S_0%20N(-d_1)%5C%5D)
+![Equation](https://latex.codecogs.com/svg.image?%5C%5BP=K%20e%5E%7B-r%20T%7DN(-d_2)-S_0%20N(-d_1))
 
 Where:
 
