@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Pricing and Greeks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            background-color:  rgb(17, 17, 17);
+            color: white;
+        }
+        .top-banner {
+            width: 100%;
+            background-color: #111;
+            color: white;
+            padding: 12px 0;
+            position: fixed;
+            top: 0;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .top-banner a {
+            color: white;
+            margin: 0 50px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .top-banner a:hover {
+            text-decoration: underline;
+        }
+
+        .sidenav {
+            height: 100%;
+            width: 300px;
+            position: fixed;
+            z-index: 1;
+            top: 40px;
+            left: 0;
+            background-color: rgb(18, 18, 18);
+            color: white;
+            padding: 25px;
+            overflow-y: scroll;
+            padding-bottom: 300px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidenav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidenav h3 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .sidenav label {
+            color: white;
+        }
+
+        .sidenav input,
+        .sidenav select {
+            margin-bottom: 15px;
+        }
+
+        .sidenav button {
+            margin-top: 15px;
+        }
+
+        .container {
+            margin-left: 300px;
+            max-width: calc(100% - 300px);
+            margin-top: 90px;
+            padding: 0;
+        }
+
+        .title {
+            position: relative;
+            font-family: Courier New;
+            background-color: rgb(24, 24, 24);
+            color: white;
+            padding: 15px;
+            padding-top: 35px;
+            text-align: center;
+            width: 100%;
+            margin: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .optionPriceResults {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            border: none;
+            box-shadow: none;
+        }
+
+        .optionPriceResults .row {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .card {
+            background-color: rgb(24, 24, 24);
+            border-radius: 0;
+            color: white;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            min-height: calc(100vh - 190px);
+            border: none;
+            box-shadow: none;
+        }
+
+        .card h3 {
+            color: green;
+        }
+
+        .card .error-card h3 {
+            color: red;
+        }
+
+        .card ul li {
+            color: black;
+        }
+
+        .card .row {
+            width: 100%;
+            margin: 0;
+            padding-top: 20px;
+        }
+
+        .card .col-md-4, .card .col-md-6 {
+            padding-top: 10px;
+        }
+
+        .visual-placeholder {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-banner">
+        <a href="/">Option Pricing</a>
+        <a href="/exotic">American and Exotic Options</a>
+        <a href="/stocks">Implied Volatility</a>
+        <a href="/about">Contact</a>
+        <a href="https://github.com/seanmealey" target="_blank" class="github-icon">
+            <i class="fab fa-github"></i>
+        </a> 
+    </div>
+    <div class="sidenav">
+        <h3>Inputs</h3>
+        <form method="post" id="/">
+            <div class="mb-3">
+                <label for="asset_price" class="form-label">Asset Price (S)</label>
+                <input type="number" step="1" class="form-control" id="asset_price" name="asset_price" required value="{{ form_data['asset_price'] }}">
+                <input type="range" class="form-range" min="0" max="1000" step="1" id="assetPriceSlider" value="{{ form_data['asset_price'] }}">
+            </div>
+            <div class="mb-3">
+                <label for="strike_price" class="form-label">Strike Price (K)</label>
+                <input type="number" step="1" class="form-control" id="strike_price" name="strike_price" required value="{{ form_data['strike_price'] }}">
+                <input type="range" class="form-range" min="0" max="1000" step="1" id="strikePriceSlider" value="{{ form_data['strike_price'] }}">
+            </div>
+            <div class="mb-3">
+                <label for="time_to_maturity" class="form-label">Time to Maturity (T in years)</label>
+                <input type="number" step="0.01" class="form-control" id="time_to_maturity" name="time_to_maturity" required value="{{ form_data['time_to_maturity'] }}">
+                <input type="range" class="form-range" min="0" max="10" step="0.01" id="timeToMaturitySlider" value="{{ form_data['time_to_maturity'] }}">
+            </div>
+            <div class="mb-3">
+                <label for="volatility" class="form-label">Volatility (σ as a decimal)</label>
+                <input type="number" step="0.01" class="form-control" id="volatility" name="volatility" required value="{{ form_data['volatility'] }}">
+                <input type="range" class="form-range" min="0" max="2" step="0.01" id="volatilitySlider" value="{{ form_data['volatility'] }}">
+            </div>
+            <div class="mb-3">
+                <label for="risk_free_rate" class="form-label">Risk-Free Rate (r as a decimal)</label>
+                <input type="number" step="0.01" class="form-control" id="risk_free_rate" name="risk_free_rate" required value="{{ form_data['risk_free_rate'] }}">
+                <input type="range" class="form-range" min="0" max="0.2" step="0.01" id="riskFreeRateSlider" value="{{ form_data['risk_free_rate'] }}">
+            </div>
+            <button type="button" class="btn btn-primary btn-lg w-100">Calculate</button>
+            <button type="reset" class="btn btn-secondary btn-lg w-100">Reset</button>
+        </form>
+    </div>
+
+    <div class="container mt-5">
+        <div class="title">
+            <h1 style="font-weight: bold; font-size: 42px;">Option Pricing</h1>
+            <p>Black-Scholes Prices and Greeks for European Options.</p>
+        </div>
+        <div class="optionPriceResults">
+            <div class="row">
+                {% if result %}
+                    <div class="card shadow p-4 {% if result == 'Error: Invalid input. Please enter valid numbers.' %}error-card{% else %}result-card{% endif %}">
+                        {% if result == "Error: Invalid input. Please enter valid numbers." %}
+                            <h3 class="text-danger">Error</h3>
+                            <p>{{ result }}</p>
+                        {% else %}
+                            <!-- Top row for Call and Put options -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="price-card" style="background: rgba(0, 128, 0, 0.36); padding: 20px; border-radius: 10px;">
+                                        <h3 style="color: rgb(0, 128, 0); font-size: 32px; margin-bottom: 15px;">
+                                            <i class="fas fa-arrow-up"></i> Call Option
+                                        </h3>
+                                        <div class="price-value" style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">
+                                            ${{ result['Call Price'] | round(2) }}
+                                        </div>
+                                        <div class="greeks" style="background: white; padding: 15px; border-radius: 8px;">
+                                            <h4 style="color: #333; font-size: 18px; margin-bottom: 10px;">Greeks</h4>
+                                            <div class="row">
+                                                {% for key, value in result['Call Greeks'].items() %}
+                                                    <div class="col-6" style="margin-bottom: 10px;">
+                                                        <div style="color: #666;">{{ key }}</div>
+                                                        <div style="font-weight: bold; color: #333;">{{ value | round(4) }}</div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="price-card" style="background: rgba(178, 34, 34, 0.36); padding: 20px; border-radius: 10px;">
+                                        <h3 style="color: rgb(178, 34, 34); font-size: 32px; margin-bottom: 15px;">
+                                            <i class="fas fa-arrow-down"></i> Put Option
+                                        </h3>
+                                        <div class="price-value" style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">
+                                            ${{ result['Put Price'] | round(2) }}
+                                        </div>
+                                        <div class="greeks" style="background: white; padding: 15px; border-radius: 8px;">
+                                            <h4 style="color: #333; font-size: 18px; margin-bottom: 10px;">Greeks</h4>
+                                            <div class="row">
+                                                {% for key, value in result['Put Greeks'].items() %}
+                                                    <div class="col-6" style="margin-bottom: 10px;">
+                                                        <div style="color: #666;">{{ key }}</div>
+                                                        <div style="font-weight: bold; color: #333;">{{ value | round(4) }}</div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bottom row for Delta and Gamma graphs -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Delta</h1>
+                                    <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
+                                        <canvas id="deltaChart" style="width: 100%; height: 100%;" data-chart-data='{{ delta_chart_data|tojson|safe }}'></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Gamma</h1>
+                                    <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
+                                        <canvas id="gammaChart" style="width: 100%; height: 100%;" data-chart-data='{{ gamma_chart_data|tojson|safe }}'></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add this after the Delta and Gamma charts -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Theta Decay</h1>
+                                    <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
+                                        <canvas id="thetaChart" style="width: 100%; height: 100%;" data-chart-data='{{ theta_chart_data|tojson|safe }}'></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Rho</h1>
+                                    <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
+                                        <canvas id="rhoChart" style="width: 100%; height: 100%;" data-chart-data='{{ rho_chart_data|tojson|safe }}'></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <p>
+                                <p></p>
+                            </p>
+                            <!-- Add this to your row of charts -->
+                            <div>
+                                <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Volatility Sensitivity (Vega)</h1>
+                                <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
+                                    <canvas id="vegaChart" style="width: 100%; height: 100%;" data-chart-data='{{ vega_chart_data|tojson|safe }}'></canvas>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to sync input and slider values
+        function setupSliderSync(inputId, sliderId) {
+            const input = document.getElementById(inputId);
+            const slider = document.getElementById(sliderId);
+
+            // Update input when slider changes
+            slider.addEventListener('input', function() {
+                // Check if this is asset price or strike price
+                if (inputId === 'asset_price' || inputId === 'strike_price') {
+                    input.value = parseInt(this.value);  // Use parseInt for integers
+                } else {
+                    input.value = parseFloat(this.value).toFixed(2);  // Keep decimals for other values
+                }
+            });
+
+            // Update slider when input changes
+            input.addEventListener('input', function() {
+                const value = inputId === 'asset_price' || inputId === 'strike_price' 
+                    ? parseInt(this.value)  // Use parseInt for integers
+                    : parseFloat(this.value);  // Use parseFloat for other values
+                
+                if (!isNaN(value)) {
+                    // Clamp the value between min and max
+                    const clampedValue = Math.min(Math.max(value, parseFloat(slider.min)), parseFloat(slider.max));
+                    slider.value = clampedValue;
+                    
+                    // Format the display value based on input type
+                    if (inputId === 'asset_price' || inputId === 'strike_price') {
+                        this.value = clampedValue;  // No decimals for integers
+                    } else {
+                        this.value = clampedValue.toFixed(2);  // Keep decimals for other values
+                    }
+                }
+            });
+        }
+
+        // Set up syncing for all input-slider pairs when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const pairs = [
+                ['asset_price', 'assetPriceSlider'],
+                ['strike_price', 'strikePriceSlider'],
+                ['time_to_maturity', 'timeToMaturitySlider'],
+                ['volatility', 'volatilitySlider'],
+                ['risk_free_rate', 'riskFreeRateSlider']
+            ];
+
+            pairs.forEach(([inputId, sliderId]) => {
+                setupSliderSync(inputId, sliderId);
+            });
+
+            // Delta Chart configuration
+            const deltaCtx = document.getElementById('deltaChart');
+            if (deltaCtx && {{ delta_chart_data|tojson|safe }}) {
+                const deltaChartData = {{ delta_chart_data|tojson|safe }};
+                
+                new Chart(deltaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: deltaChartData.stock_prices,
+                        datasets: [
+                            {
+                                label: 'Call Delta',
+                                data: deltaChartData.call_deltas,
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#00ff88',
+                                pointHoverBorderColor: '#fff'
+                            },
+                            {
+                                label: 'Put Delta',
+                                data: deltaChartData.put_deltas,
+                                borderColor: '#ff4d4d',
+                                backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#ff4d4d',
+                                pointHoverBorderColor: '#fff'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Delta vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                },
+                                min: Math.min(...deltaChartData.stock_prices),
+                                max: Math.max(...deltaChartData.stock_prices)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Delta',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gamma Chart configuration
+            const gammaCtx = document.getElementById('gammaChart');
+            if (gammaCtx && {{ gamma_chart_data|tojson|safe }}) {
+                const gammaChartData = {{ gamma_chart_data|tojson|safe }};
+                
+                new Chart(gammaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: gammaChartData.stock_prices,
+                        datasets: [{
+                            label: 'Gamma',
+                            data: gammaChartData.gammas,
+                            borderColor: '#9966ff',
+                            backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#9966ff',
+                            pointHoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Gamma vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Gamma',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Theta Chart configuration
+            const thetaCtx = document.getElementById('thetaChart');
+            if (thetaCtx && {{ theta_chart_data|tojson|safe }}) {
+                const thetaChartData = {{ theta_chart_data|tojson|safe }};
+                
+                new Chart(thetaCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Call Theta',
+                                data: thetaChartData.times.map((time, index) => ({
+                                    x: time,
+                                    y: thetaChartData.call_thetas[index]
+                                })),
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#00ff88',
+                                pointHoverBorderColor: '#fff'
+                            },
+                            {
+                                label: 'Put Theta',
+                                data: thetaChartData.times.map((time, index) => ({
+                                    x: time,
+                                    y: thetaChartData.put_thetas[index]
+                                })),
+                                borderColor: '#ff4d4d',
+                                backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#ff4d4d',
+                                pointHoverBorderColor: '#fff'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Theta vs Time to Expiration',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Time to Expiration (Years)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return value.toFixed(2) + 'y';
+                                    }
+                                },
+                                min: Math.min(...thetaChartData.times),
+                                max: Math.max(...thetaChartData.times)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Theta ($/day)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        // ... existing code ...
+    
+        // Rho Chart configuration
+        const rhoCtx = document.getElementById('rhoChart');
+        if (rhoCtx && {{ rho_chart_data|tojson|safe }}) {
+            const rhoChartData = {{ rho_chart_data|tojson|safe }};
+            
+            new Chart(rhoCtx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Call Rho',
+                            data: rhoChartData.interest_rates.map((rate, index) => ({
+                                x: rate * 100, // Convert to percentage
+                                y: rhoChartData.call_rhos[index]
+                            })),
+                            borderColor: '#00ff88',
+                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#00ff88',
+                            pointHoverBorderColor: '#fff'
+                        },
+                        {
+                            label: 'Put Rho',
+                            data: rhoChartData.interest_rates.map((rate, index) => ({
+                                x: rate * 100, // Convert to percentage
+                                y: rhoChartData.put_rhos[index]
+                            })),
+                            borderColor: '#ff4d4d',
+                            backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#ff4d4d',
+                            pointHoverBorderColor: '#fff'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Rho vs Interest Rate',
+                            color: '#fff',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        legend: {
+                            labels: {
+                                color: '#fff',
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            borderColor: '#333',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Interest Rate (%)',
+                                color: '#fff',
+                                padding: 10
+                            },
+                            ticks: {
+                                color: '#fff',
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            },
+                            min: 0,
+                            max: 10
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Rho ($ per 1% change)',
+                                color: '#fff',
+                                padding: 10
+                            },
+                            ticks: {
+                                color: '#fff',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    <script>
+
+        // Vega Chart configuration
+        const vegaCtx = document.getElementById('vegaChart');
+        if (vegaCtx) {
+            const vegaChartData = {{ vega_chart_data|tojson|safe if vega_chart_data else 'null' }};
+            if (vegaChartData) {
+                new Chart(vegaCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: 'Vega',
+                            data: vegaChartData.stock_prices.map((price, index) => ({
+                                x: price,
+                                y: vegaChartData.vegas[index]
+                            })),
+                            borderColor: '#9966ff',
+                            backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#9966ff',
+                            pointHoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Vega vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                },
+                                min: Math.min(...vegaChartData.stock_prices),
+                                max: Math.max(...vegaChartData.stock_prices)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Vega ($ per 1% Volatility)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.btn-primary').on('click', function(event) {
+                event.preventDefault();
+                
+                $.ajax({
+                    type: 'POST',
+                    url: '/',
+                    data: $('form').serialize(),
+                    success: function(response) {
+                        // Update the results section
+                        $('.optionPriceResults').html($(response).find('.optionPriceResults').html());
+                        
+                        // Destroy existing chart instances
+                        const chartIds = ['deltaChart', 'gammaChart', 'thetaChart', 'rhoChart', 'vegaChart'];
+                        chartIds.forEach(id => {
+                            const chart = Chart.getChart(id);
+                            if (chart) {
+                                chart.destroy();
+                            }
+                        });
+                        
+                        // Extract chart data from the response
+                        const deltaChartData = $(response).find('#deltaChart').data('chart-data');
+                        const gammaChartData = $(response).find('#gammaChart').data('chart-data');
+                        const thetaChartData = $(response).find('#thetaChart').data('chart-data');
+                        const rhoChartData = $(response).find('#rhoChart').data('chart-data');
+                        const vegaChartData = $(response).find('#vegaChart').data('chart-data');
+                        
+                        // Initialize charts with the extracted data
+                        if (deltaChartData) {
+                            initializeCharts(deltaChartData, gammaChartData, thetaChartData, rhoChartData, vegaChartData);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                        $('.optionPriceResults .row').html(`
+                            <div class="card shadow p-4 error-card">
+                                <h3 class="text-danger">Error</h3>
+                                <p>An error occurred while processing your request.</p>
+                            </div>
+                        `);
+                    }
+                });
+            });
+        });
+
+        // Function to initialize all charts
+        function initializeCharts(deltaData, gammaData, thetaData, rhoData, vegaData) {
+            // Delta Chart
+            const deltaCtx = document.getElementById('deltaChart');
+            if (deltaCtx && deltaData) {
+                new Chart(deltaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: deltaData.stock_prices,
+                        datasets: [
+                            {
+                                label: 'Call Delta',
+                                data: deltaData.call_deltas,
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#00ff88',
+                                pointHoverBorderColor: '#fff'
+                            },
+                            {
+                                label: 'Put Delta',
+                                data: deltaData.put_deltas,
+                                borderColor: '#ff4d4d',
+                                backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#ff4d4d',
+                                pointHoverBorderColor: '#fff'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Delta vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                },
+                                min: Math.min(...deltaData.stock_prices),
+                                max: Math.max(...deltaData.stock_prices)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Delta',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gamma Chart configuration
+            const gammaCtx = document.getElementById('gammaChart');
+            if (gammaCtx && {{ gamma_chart_data|tojson|safe }}) {
+                
+                new Chart(gammaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: gammaData.stock_prices,
+                        datasets: [{
+                            label: 'Gamma',
+                            data: gammaData.gammas,
+                            borderColor: '#9966ff',
+                            backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#9966ff',
+                            pointHoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Gamma vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Gamma',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Theta Chart configuration
+            const thetaCtx = document.getElementById('thetaChart');
+            if (thetaCtx && thetaData) {
+                new Chart(thetaCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Call Theta',
+                                data: thetaData.times.map((time, index) => ({
+                                    x: time,
+                                    y: thetaData.call_thetas[index]
+                                })),
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#00ff88',
+                                pointHoverBorderColor: '#fff'
+                            },
+                            {
+                                label: 'Put Theta',
+                                data: thetaData.times.map((time, index) => ({
+                                    x: time,
+                                    y: thetaData.put_thetas[index]
+                                })),
+                                borderColor: '#ff4d4d',
+                                backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#ff4d4d',
+                                pointHoverBorderColor: '#fff'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Theta vs Time to Expiration',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Time to Expiration (Years)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return value.toFixed(2) + 'y';
+                                    }
+                                },
+                                min: Math.min(...thetaData.times),
+                                max: Math.max(...thetaData.times)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Theta ($/day)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Rho Chart configuration
+            const rhoCtx = document.getElementById('rhoChart');
+            if (rhoCtx && rhoData) {
+                new Chart(rhoCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Call Rho',
+                                data: rhoData.interest_rates.map((rate, index) => ({
+                                    x: rate * 100, // Convert to percentage
+                                    y: rhoData.call_rhos[index]
+                                })),
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#00ff88',
+                                pointHoverBorderColor: '#fff'
+                            },
+                            {
+                                label: 'Put Rho',
+                                data: rhoData.interest_rates.map((rate, index) => ({
+                                    x: rate * 100, // Convert to percentage
+                                    y: rhoData.put_rhos[index]
+                                })),
+                                borderColor: '#ff4d4d',
+                                backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: '#ff4d4d',
+                                pointHoverBorderColor: '#fff'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Rho vs Interest Rate',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Interest Rate (%)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return value.toFixed(1) + '%';
+                                    }
+                                },
+                                min: 0,
+                                max: 10
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Rho ($ per 1% change)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Vega Chart configuration
+            const vegaCtx = document.getElementById('vegaChart');
+            if (vegaCtx && vegaData) {
+                new Chart(vegaCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: 'Vega',
+                            data: vegaData.stock_prices.map((price, index) => ({
+                                x: price,
+                                y: vegaData.vegas[index]
+                            })),
+                            borderColor: '#9966ff',
+                            backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#9966ff',
+                            pointHoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Vega vs Stock Price',
+                                color: '#fff',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                padding: 12,
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Stock Price ($)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                },
+                                min: Math.min(...vegaData.stock_prices),
+                                max: Math.max(...vegaData.stock_prices)
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Vega ($ per 1% Volatility)',
+                                    color: '#fff',
+                                    padding: 10
+                                },
+                                ticks: {
+                                    color: '#fff',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

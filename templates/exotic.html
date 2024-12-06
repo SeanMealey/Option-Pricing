@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exotic Options Pricing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: rgb(17, 17, 17);
+            color: white;
+        }
+        .top-banner {
+            width: 100%;
+            background-color: #111;
+            color: white;
+            padding: 12px 0;
+            position: fixed;
+            top: 0;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .top-banner a {
+            color: white;
+            margin: 0 50px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .top-banner a:hover {
+            text-decoration: underline;
+        }
+
+        .sidenav {
+            height: 100%;
+            width: 300px;
+            position: fixed;
+            z-index: 1;
+            top: 40px;
+            left: 0;
+            background-color: rgb(24, 24, 24);
+            color: white;
+            padding: 25px;
+            overflow-y: scroll;
+            padding-bottom: 300px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidenav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidenav h3 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .sidenav label {
+            color: white;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .sidenav input,
+        .sidenav select {
+            margin-bottom: 15px;
+            background-color: rgb(34, 34, 34);
+            border: 1px solid #333;
+            color: white;
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .sidenav input[type="range"] {
+            padding: 0;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        .sidenav .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            padding: 8px 12px;
+            height: auto;
+        }
+
+        .sidenav select option {
+            background-color: rgb(34, 34, 34);
+            color: white;
+        }
+
+        .sidenav input:focus,
+        .sidenav select:focus {
+            background-color: rgb(34, 34, 34);
+            border-color: #007bff;
+            color: white;
+            box-shadow: none;
+        }
+
+        .sidenav button {
+            margin-top: 15px;
+        }
+
+        .container {
+            margin-left: 300px;
+            max-width: calc(100% - 320px);
+            margin-top: 90px;
+        }
+
+        .title {
+            position: relative;
+            font-family: Courier New;
+            background-color: rgb(17, 17, 17);
+            color: white;
+            padding: 15px;
+            padding-top: 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .optionPriceResults {
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 1px solid #333;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #00ff88;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .card ul li {
+            color: #e0e0e0;
+            font-size: 1.2rem;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .card ul li:last-child {
+            border-bottom: none;
+        }
+
+        .card ul li strong {
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        .card .error-card h3 {
+            color: red;
+        }
+
+        .result-highlight {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border: 1px solid #333;
+        }
+
+        .result-highlight .display-4 {
+            color: #00ff88;
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .option-type-badge {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .parameters-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .parameters-list li {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border: none !important;
+            text-align: center;
+        }
+
+        .parameters-list li strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #007bff;
+            font-size: 1rem;
+        }
+
+        .price-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .option-badge {
+            background: linear-gradient(135deg, #007bff, #00d2ff);
+            color: white;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+        }
+
+        .price-header h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .price-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .currency {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .param-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .param-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .param-card .icon {
+            font-size: 1.5rem;
+            color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .param-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .param-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.3rem;
+        }
+
+        .param-value {
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .card {
+            backdrop-filter: blur(10px);
+            background: linear-gradient(145deg, rgba(31, 31, 31, 0.9), rgba(41, 41, 41, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="top-banner">
+        <a href="/">Option Pricing</a>
+        <a href="/exotic">American and Exotic Options</a>
+        <a href="/stocks">Implied Volatility</a>
+        <a href="/about">Contact</a>
+        <a href="https://github.com/seanmealey" target="_blank" class="github-icon">
+            <i class="fab fa-github"></i>
+        </a> 
+    </div>
+
+    <div class="sidenav">
+        <h3>Inputs</h3>
+        <form id="optionForm" action="/calculate_exotic" method="POST">
+            <label for="assetPrice">Asset Price</label>
+            <input type="number" step="0.01" id="assetPrice" name="asset_price" value="{{ form_data['asset_price'] }}" required>
+            <input type="range" id="assetPriceSlider" name="asset_price_slider" min="0" max="1000" step="1" value="{{ form_data['asset_price'] }}">
+
+            <label for="strikePrice">Strike Price</label>
+            <input type="number" step="0.01" id="strikePrice" name="strike_price" value="{{ form_data['strike_price'] }}" required>
+            <input type="range" id="strikePriceSlider" name="strike_price_slider" min="0" max="1000" step="1" value="{{ form_data['strike_price'] }}">
+
+            <label for="time_to_maturity">Time to Maturity (years)</label>
+            <input type="number" step="0.01" id="time_to_maturity" name="time_to_maturity" value="{{ form_data['time_to_maturity'] }}" required>
+            <input type="range" id="timeToMaturitySlider" name="time_to_maturity_slider" min="0" max="10" step="0.01" value="{{ form_data['time_to_maturity'] }}">
+
+            <label for="volatility">Volatility</label>
+            <input type="number" step="0.01" id="volatility" name="volatility" value="{{ form_data['volatility'] }}" required>
+            <input type="range" id="volatilitySlider" name="volatility_slider" min="0" max="1" step="0.01" value="{{ form_data['volatility'] }}">
+
+            <label for="risk_free_rate">Risk-Free Rate</label>
+            <input type="number" step="0.01" id="risk_free_rate" name="risk_free_rate" value="{{ form_data['risk_free_rate'] }}" required>
+            <input type="range" id="riskFreeRateSlider" name="risk_free_rate_slider" min="0" max="0.2" step="0.01" value="{{ form_data['risk_free_rate'] }}">
+
+            <label for="exoticType">Exotic Type</label>
+            <select class="form-select" id="exoticType" name="exotic_type" required>
+                <option value="american" {% if form_data['exotic_type'] == 'american' %}selected{% endif %}>American</option>
+                <option value="asian" {% if form_data['exotic_type'] == 'asian' %}selected{% endif %}>Asian</option>
+                <option value="digital" {% if form_data['exotic_type'] == 'digital' %}selected{% endif %}>Digital</option>
+                <option value="lookback" {% if form_data['exotic_type'] == 'lookback' %}selected{% endif %}>Lookback</option>
+                <option value="barrier" {% if form_data['exotic_type'] == 'barrier' %}selected{% endif %}>Barrier</option>
+            </select>
+
+            <div id="additionalFields"></div>
+
+            <label for="optionType">Option Type</label>
+            <select class="form-select" id="optionType" name="option_type" required>
+                <option value="call" {% if form_data['option_type'] == 'call' %}selected{% endif %}>Call</option>
+                <option value="put" {% if form_data['option_type'] == 'put' %}selected{% endif %}>Put</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="container mt-5">
+        <div class="title">
+            <h1 style="font-weight: bold;">American and Exotic Options</h1>
+            <p>Calculate prices using Binomial Tree and Monte Carlo simulation.</p>
+        </div>
+        
+        <div id="optionPriceResults" class="optionPriceResults">
+            {% if result %}
+            <div class="card shadow p-5">
+                <div class="price-header">
+                    <div class="option-badge">{{ form_data['exotic_type'].title() }} {{ form_data['option_type'].title() }}</div>
+                    <h3>Option Value</h3>
+                    <div class="price-display">
+                        <span class="currency">$</span>
+                        <span class="amount">{{ result | round(2) }}</span>
+                    </div>
+                </div>
+                
+                <div class="parameters-grid">
+                    <div class="param-card">
+                        <i class="fas fa-dollar-sign icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Asset Price</span>
+                            <span class="param-value">${{ form_data['asset_price'] }}</span>
+                        </div>
+                    </div>
+                    <div class="param-card">
+                        <i class="fas fa-bullseye icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Strike Price</span>
+                            <span class="param-value">${{ form_data['strike_price'] }}</span>
+                        </div>
+                    </div>
+                    <div class="param-card">
+                        <i class="fas fa-clock icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Time to Maturity</span>
+                            <span class="param-value">{{ form_data['time_to_maturity'] }} years</span>
+                        </div>
+                    </div>
+                    <div class="param-card">
+                        <i class="fas fa-chart-line icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Volatility</span>
+                            <span class="param-value">{{ (form_data['volatility'] * 100) | round(1) }}%</span>
+                        </div>
+                    </div>
+                    <div class="param-card">
+                        <i class="fas fa-percentage icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Risk-Free Rate</span>
+                            <span class="param-value">{{ (form_data['risk_free_rate'] * 100) | round(1) }}%</span>
+                        </div>
+                    </div>
+                    {% if form_data['exotic_type'] == 'barrier' %}
+                    <div class="param-card">
+                        <i class="fas fa-barrier icon"></i>
+                        <div class="param-content">
+                            <span class="param-label">Barrier Details</span>
+                            <span class="param-value">${{ form_data['barrier_price'] }} ({{ form_data['barrier_type'].title() }})</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+
+
+        // Function to Capitalize First Letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Handle AJAX Form Submission
+        document.getElementById('optionForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // Convert FormData to JSON
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.error) {
+                    // Display error message
+                    document.getElementById('optionPriceResults').innerHTML = `
+                        <div class="card shadow p-5">
+                            <div class="price-header">
+                                <div class="option-badge">Complete the inputs</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Update the option price results
+                    let additionalParams = '';
+                    if (data.extra) {
+                        for (const [key, value] of Object.entries(data.extra)) {
+                            additionalParams += `
+                                <div class="param-card">
+                                    <i class="fas fa-info-circle icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">${key}</span>
+                                        <span class="param-value">${value}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    document.getElementById('optionPriceResults').innerHTML = `
+                        <div class="card shadow p-5">
+                            <div class="price-header">
+                                <div class="option-badge">${capitalizeFirstLetter(data.exotic_type)} ${capitalizeFirstLetter(data.option_type)}</div>
+                                <h3>Option Value</h3>
+                                <div class="price-display">
+                                    <span class="currency">$</span>
+                                    <span class="amount">${data.result.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="parameters-grid">
+                                <div class="param-card">
+                                    <i class="fas fa-dollar-sign icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">Asset Price</span>
+                                        <span class="param-value">$${parseFloat(data.asset_price).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div class="param-card">
+                                    <i class="fas fa-bullseye icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">Strike Price</span>
+                                        <span class="param-value">$${parseFloat(data.strike_price).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div class="param-card">
+                                    <i class="fas fa-clock icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">Time to Maturity</span>
+                                        <span class="param-value">${parseFloat(data.time_to_maturity).toFixed(2)} years</span>
+                                    </div>
+                                </div>
+                                <div class="param-card">
+                                    <i class="fas fa-chart-line icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">Volatility</span>
+                                        <span class="param-value">${(parseFloat(data.volatility) * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                                <div class="param-card">
+                                    <i class="fas fa-percentage icon"></i>
+                                    <div class="param-content">
+                                        <span class="param-label">Risk-Free Rate</span>
+                                        <span class="param-value">${(parseFloat(data.risk_free_rate) * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                                ${additionalParams}
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('optionPriceResults').innerHTML = `
+                    <div class="card shadow p-5">
+                        <div class="price-header">
+                            <div class="option-badge">Error</div>
+                            <h3>There was an error processing your request.</h3>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        // Add this function at the start of your scripts
+        function setupSliderSync(inputId, sliderId) {
+            const input = document.getElementById(inputId);
+            const slider = document.getElementById(sliderId);
+
+            if (!input || !slider) {
+                console.warn(`Element with ID '${inputId}' or '${sliderId}' not found.`);
+                return;
+            }
+
+            // Sync slider to input
+            slider.addEventListener('input', function() {
+                input.value = this.value;
+                debounceSubmit();
+            });
+
+            // Sync input to slider
+            input.addEventListener('input', function() {
+                slider.value = this.value;
+                debounceSubmit();
+            });
+        }
+
+        // Debounce function to delay form submission until user stops sliding
+        function debounce(func, delay) {
+            let debounceTimer;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        function submitForm() {
+            document.getElementById('optionForm').dispatchEvent(new Event('submit'));
+        }
+
+        const debounceSubmit = debounce(submitForm, 1000); // 1000ms delay
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sync for all slider pairs
+            setupSliderSync('assetPrice', 'assetPriceSlider');
+            setupSliderSync('strikePrice', 'strikePriceSlider');
+            setupSliderSync('time_to_maturity', 'timeToMaturitySlider');
+            setupSliderSync('volatility', 'volatilitySlider');
+            setupSliderSync('risk_free_rate', 'riskFreeRateSlider');
+
+            const form = document.getElementById('optionForm');
+            const inputs = form.querySelectorAll('input, select');
+
+            // Add change listener to non-range inputs
+            inputs.forEach(input => {
+                if (input.type !== 'range') {
+                    input.addEventListener('change', debounceSubmit);
+                }
+            });
+
+            // Handle additional fields based on exotic type
+            document.getElementById('exoticType').addEventListener('change', function() {
+                const additionalFields = document.getElementById('additionalFields');
+                additionalFields.innerHTML = '';
+                if (this.value === 'asian') {
+                    additionalFields.innerHTML = `
+                        <div class="mb-3">
+                            <label for="averagePrice" class="form-label">Average Price</label>
+                            <input type="number" step="0.01" class="form-control" id="averagePrice" name="average_price" 
+                                value="{{ form_data['average_price']|default('')|tojson }}">
+                        </div>`;
+                } else if (this.value === 'digital') {
+                    additionalFields.innerHTML = `
+                        <div class="mb-3">
+                            <label for="payout" class="form-label">Payout</label>
+                            <input type="number" step="0.01" class="form-control" id="payout" name="payout"
+                                value="{{ form_data['payout']|default('')|tojson }}">
+                        </div>`;
+                } else if (this.value === 'lookback') {
+                    additionalFields.innerHTML = `
+                        <div class="mb-3">
+                            <label for="maxPrice" class="form-label">Max Price</label>
+                            <input type="number" step="0.01" class="form-control" id="maxPrice" name="max_price"
+                                value="{{ form_data['max_price']|default('')|tojson }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="minPrice" class="form-label">Min Price</label>
+                            <input type="number" step="0.01" class="form-control" id="minPrice" name="min_price"
+                                value="{{ form_data['min_price']|default('')|tojson }}">
+                        </div>`;
+                }
+                else if (this.value === 'barrier') {
+                    additionalFields.innerHTML = `
+                        <div class="mb-3">
+                            <label for="barrierPrice" class="form-label">Barrier Price</label>
+                            <input type="number" step="0.01" class="form-control" id="barrierPrice" name="barrier_price"
+                                value="{{ form_data['barrier_price']|default('')|tojson }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="barrierType" class="form-label">Barrier Type</label>
+                            <select class="form-select" id="barrierType" name="barrier_type" required>
+                                <option value="knock-in" {% if form_data['barrier_type'] == 'knock-in' %}selected{% endif %}>Knock-In</option>
+                                <option value="knock-out" {% if form_data['barrier_type'] == 'knock-out' %}selected{% endif %}>Knock-Out</option>
+                            </select>
+                        </div>`;
+                }  
+                debounceSubmit();
+            });
+
+            // Initialize additional fields based on the current exotic type without triggering form submission
+            (function initializeAdditionalFields() {
+                const exoticTypeSelect = document.getElementById('exoticType');
+                exoticTypeSelect.dispatchEvent(new Event('change'));
+            })();
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
