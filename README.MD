@@ -1,4 +1,5 @@
-# OptionPricingAndAnalytics.com
+# [http://optionpricingandanalytics.com/](http://optionpricingandanalytics.com/)
+
 
 Welcome to **OptionPricingAndAnalytics.com** – a comprehensive web application designed to help you understand and visualize option pricing, the Greeks, implied volatility, and exotic options. This tool is valuable for finance professionals, students, and anyone interested in options trading and risk management.
 
@@ -45,32 +46,25 @@ The **Black-Scholes model** is a mathematical model for pricing European-style o
 
 The formula for a European call option is:
 
-\[
-C = S_0 N(d_1) - K e^{-r T} N(d_2)
-\]
+
+![Equation](https://latex.codecogs.com/svg.image?%5C%5BC=S_0%20N(d_1)-K%20e%5E%7B-r%20T%7DN(d_2)%5C%5D)
 
 For a put option:
 
-\[
-P = K e^{-r T} N(-d_2) - S_0 N(-d_1)
-\]
+![Equation](https://latex.codecogs.com/svg.image?%5C%5BP=K%20e%5E%7B-r%20T%7DN(-d_2)-S_0%20N(-d_1)%5C%5D)
 
 Where:
 
-- \( S_0 \) = Current stock price
-- \( K \) = Strike price
-- \( T \) = Time to expiration (in years)
-- \( r \) = Risk-free interest rate
-- \( \sigma \) = Volatility of the underlying asset
-- \( N(\cdot) \) = Cumulative distribution function of the standard normal distribution
-- \( d_1 \) and \( d_2 \) are calculated as:
+- ![Equation](https://latex.codecogs.com/svg.image?S_0)  = Current stock price
+- K = Strike price
+- T = Time to expiration (in years)
+- r = Risk-free interest rate
+- ![Equation](https://latex.codecogs.com/svg.image?%5Csigma%5C) = Volatility of the underlying asset
+- ![Equation](https://latex.codecogs.com/svg.image?N) = Cumulative distribution function of the standard normal distribution
+- ![Equation](https://latex.codecogs.com/svg.image?%5C;d_1%5C) and ![Equation](https://latex.codecogs.com/svg.image?%5C;d_2%5C) are calculated as:
 
-\[
-\begin{align*}
-d_1 &= \frac{\ln(S_0 / K) + (r + \sigma^2 / 2) T}{\sigma \sqrt{T}} \\
-d_2 &= d_1 - \sigma \sqrt{T}
-\end{align*}
-\]
+
+![Equation](https://latex.codecogs.com/svg.image?%5Cbegin%7Balign*%7Dd_1%26%3D%5Cfrac%7B%5Cln(S_0/K)%2B(r%2B%5Csigma%5E2/2)T%7D%7B%5Csigma%5Csqrt%7BT%7D%7D%5C%3Bd_2%26%3Dd_1-%5Csigma%5Csqrt%7BT%7D%5Cend%7Balign*%7D)
 
 ### The Greeks
 
@@ -100,7 +94,7 @@ The **Volatility Smile** is a graphical representation showing implied volatilit
 
 ### Option Pricing Calculator
 
-**URL**: `/`
+[http://optionpricingandanalytics.com/](http://optionpricingandanalytics.com/)
 
 This tool allows you to calculate the price and Greeks of European call and put options using the Black-Scholes model.
 
@@ -131,7 +125,6 @@ This tool allows you to calculate the price and Greeks of European call and put 
 
 ### Implied Volatility Calculator
 
-**URL**: `/stocks`
 
 This tool calculates the implied volatility of an option using market data and generates the volatility smile.
 
@@ -159,9 +152,8 @@ This tool calculates the implied volatility of an option using market data and g
 
 The plot helps visualize how implied volatility varies with strike prices. A typical volatility smile indicates that implied volatility is higher for deep in-the-money and out-of-the-money options.
 
-### Exotic Options Pricing
+### American and Exotic Options Pricing
 
-**URL**: `/exotic`
 
 Calculate prices for American and exotic options using advanced numerical methods.
 
