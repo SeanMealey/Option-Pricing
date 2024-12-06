@@ -168,7 +168,7 @@
         <a href="/exotic">American and Exotic Options</a>
         <a href="/stocks">Implied Volatility</a>
         <a href="/about">Contact</a>
-        <a href="https://github.com/seanmealey" target="_blank" class="github-icon">
+        <a href="https://github.com/SeanMealey/Option-Pricing" target="_blank" class="github-icon">
             <i class="fab fa-github"></i>
         </a> 
     </div>
@@ -233,7 +233,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="iv-result" style="font-family: roboto, sans-serif;">
-                            Implied Volatility: 46.88%
+                            Implied Volatility: 35.25%
                         </h4>
                     </div>
                 </div>
@@ -312,18 +312,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            // Only load NVDA data if no form data exists
+            // Set initial values
             const assetPrice = document.getElementById('asset_price').value;
             if (!assetPrice) {
+                document.getElementById('dte').value = '30';
+                document.getElementById('ticker').value = 'NVDA';
                 const loadDataBtn = document.getElementById('loadDataBtn');
                 loadDataBtn.click();
             }
         });
 
+        // Add event listener to loadDataBtn
         document.getElementById('loadDataBtn').addEventListener('click', async function() {
             const button = this;
             const icon = button.querySelector('.fa-sync-alt');
             const ticker = document.getElementById('ticker').value;
+            const currentDTE = document.getElementById('dte').value;
             
             if (!ticker) {
                 alert('Please enter a ticker symbol');
@@ -344,13 +348,12 @@
                 });
 
                 const data = await response.json();
-                
 
                 // Update form fields only when Load button is clicked
                 document.getElementById('ticker').value = ticker.toUpperCase();
                 document.getElementById('asset_price').value = Number(data.asset_price).toFixed(2);
                 document.getElementById('strike_price').value = data.strike_price;
-                document.getElementById('dte').value = data.dte;
+                document.getElementById('dte').value = currentDTE || '30';  // Preserve user input or use 30
                 document.getElementById('risk_free_rate').value = Number(data.risk_free_rate).toFixed(2);
                 document.getElementById('volatility').value = data.volatility;
 

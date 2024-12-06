@@ -172,7 +172,7 @@
         <a href="/exotic">American and Exotic Options</a>
         <a href="/stocks">Implied Volatility</a>
         <a href="/about">Contact</a>
-        <a href="https://github.com/seanmealey" target="_blank" class="github-icon">
+        <a href="https://github.com/SeanMealey/Option-Pricing" target="_blank" class="github-icon">
             <i class="fab fa-github"></i>
         </a> 
     </div>
@@ -304,7 +304,7 @@
                             </p>
                             <!-- Add this to your row of charts -->
                             <div>
-                                <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Volatility Sensitivity (Vega)</h1>
+                                <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Volatility Sensitivity</h1>
                                 <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
                                     <canvas id="vegaChart" style="width: 100%; height: 100%;" data-chart-data='{{ vega_chart_data|tojson|safe }}'></canvas>
                                 </div>
@@ -323,34 +323,24 @@
             const input = document.getElementById(inputId);
             const slider = document.getElementById(sliderId);
 
-            // Update input when slider changes
+            if (!input || !slider) {
+                console.warn(`Element with ID '${inputId}' or '${sliderId}' not found.`);
+                return;
+            }
+
+            // Sync slider to input
             slider.addEventListener('input', function() {
-                // Check if this is asset price or strike price
-                if (inputId === 'asset_price' || inputId === 'strike_price') {
-                    input.value = parseInt(this.value);  // Use parseInt for integers
-                } else {
-                    input.value = parseFloat(this.value).toFixed(2);  // Keep decimals for other values
-                }
+                input.value = this.value; // Update input value
             });
 
-            // Update slider when input changes
+            // Sync input to slider
             input.addEventListener('input', function() {
-                const value = inputId === 'asset_price' || inputId === 'strike_price' 
-                    ? parseInt(this.value)  // Use parseInt for integers
-                    : parseFloat(this.value);  // Use parseFloat for other values
-                
-                if (!isNaN(value)) {
-                    // Clamp the value between min and max
-                    const clampedValue = Math.min(Math.max(value, parseFloat(slider.min)), parseFloat(slider.max));
-                    slider.value = clampedValue;
-                    
-                    // Format the display value based on input type
-                    if (inputId === 'asset_price' || inputId === 'strike_price') {
-                        this.value = clampedValue;  // No decimals for integers
-                    } else {
-                        this.value = clampedValue.toFixed(2);  // Keep decimals for other values
-                    }
-                }
+                slider.value = this.value; // Update slider value
+            });
+
+            // Add this event listener to trigger results update when slider stops moving
+            slider.addEventListener('change', function() {
+                $('.btn-primary').trigger('click'); // Trigger the button click to update results
             });
         }
 
