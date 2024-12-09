@@ -17,7 +17,6 @@ Welcome to **OptionPricingAndAnalytics.com** – a comprehensive web application
   - [Option Pricing Calculator](#option-pricing-calculator)
   - [Implied Volatility Calculator](#implied-volatility-calculator)
   - [Exotic Options Pricing](#exotic-options-pricing)
-- [Technologies and Skills Demonstrated](#technologies-and-skills-demonstrated)
 - [Contact Information](#contact-information)
 
 ---
