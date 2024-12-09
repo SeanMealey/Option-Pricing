@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me & Contact</title>
+    <title>About</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -46,6 +46,7 @@
             text-decoration: none;
             font-weight: bold;
         }
+
         .top-banner a:hover {
             text-decoration: underline;
         }
@@ -58,6 +59,7 @@
             padding: 24px;
             margin-bottom: 32px;
             transition: transform 0.3s ease;
+            overflow-x: auto;
         }
 
         .card:hover {
@@ -101,6 +103,199 @@
             text-align: center;
             margin-bottom: 48px;
         }
+
+        #binomial-tree-container {
+            width: 100%;
+            overflow-x: auto;
+            height: 100px;
+            transition: height 0.5s ease;
+        }
+
+        #binomial-tree-container.expanded {
+            height: 800px;
+        }
+
+        #binomial-tree-viz {
+            min-width: 1100px;
+            min-height: 600px;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        #binomial-tree-viz.visible {
+            opacity: 1;
+        }
+
+        #binomial-tree-viz svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .parameters-grid {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            color: #f5f5f5;
+        }
+
+        .text-success {
+            color: #4ade80 !important;
+        }
+
+        .ev-node {
+            fill: rgba(245, 158, 11, 0.1);
+            stroke: #f59e0b;
+        }
+
+        .ev-text {
+            fill: #f59e0b;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4ade80;
+        }
+
+        .price-display {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .price-display h4 {
+            color: #4ade80;
+            margin-bottom: 15px;
+        }
+
+        .price-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            color: white;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #4ade80;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+            color: white;
+        }
+
+        select.form-control option {
+            background: rgb(24, 24, 24);
+            color: white;
+        }
+
+        .discount-explanation {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .discount-explanation h5 {
+            color: #f59e0b;
+            margin-bottom: 10px;
+        }
+
+        .discount-explanation p {
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .discount-value {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .grid-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .grid-line.vertical {
+            width: 1px;
+            height: 100%;
+        }
+        
+        .search-point.pulse {
+            animation: pulse 1s;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0.5;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .legend {
+            font-size: 12px;
+            color: #ffffff;
+        }
+        
+        #search-status {
+            font-size: 12px;
+        }
+
+        .node-tooltip {
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+        }
+        
+        #iv-search-viz {
+            position: relative;
+        }
+
+        .tooltip-content {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .search-node {
+            cursor: pointer;
+        }
+
+        .axis-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .grid line {
+            stroke: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -109,66 +304,155 @@
         <a href="/">Option Pricing</a>
         <a href="/exotic">American and Exotic Options</a>
         <a href="/stocks">Implied Volatility</a>
-        <a href="/about">Contact</a>
+        <a href="/about">About</a>
         <a href="https://github.com/SeanMealey/Option-Pricing" target="_blank" class="github-icon">
             <i class="fab fa-github"></i>
-        </a>        
+        </a>
     </div>
-
     <div class="container">
-        <!-- About Me Section -->
         <div class="title">
-            <h1>About Me</h1>
+            <h1>About</h1>
+        </div>
+        <div class="card">
+            <h3>Monte Carlo Simulation Process</h3>
+            <p>This visualization demonstrates how Monte Carlo simulation estimates option prices through multiple price paths:</p>
+            <div class="monte-carlo-visualization">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="mc_num_paths">Number of Paths</label>
+                            <select class="form-control" id="mc_num_paths">
+                                <option value="100">10 paths</option>
+                                <option value="1000">100 paths</option>
+                                <option value="10000">1000 paths</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="startMonteCarloSim()">Run Simulation</button>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="monte-carlo-viz"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--
+        <div class="card">
+            <h3>Implied Volatility Search Process</h3>
+            <p>This visualization demonstrates how implied volatility is calculated using binary search:</p>
+            <div class="iv-visualization">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="market_price">Market Price ($)</label>
+                            <input type="number" class="form-control" id="market_price" value="5.00" step="0.01">
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="startIVSearch()">Start Search</button>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="iv-search-viz"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card">
-            <h3>Introduction</h3>
-            <p>Hello, I'm Sean Mealey, a developer with 
-expertise in Java, C, and Python. This is a personal project for my own use but if you have any additional ideas feel free to submit them to me. 
-Feel free to browse my portfolio and reach out if you'd like to 
-collaborate</p>
+            <h3>Binomial Tree</h3>
+            <p>This visualization demonstrates how the binomial tree model works for American options:</p>
+            <div class="option-inputs mb-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-grid">
+                            <div class="form-group">
+                                <label for="asset_price">Asset Price ($)</label>
+                                <input type="number" class="form-control" id="asset_price" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="strike_price">Strike Price ($)</label>
+                                <input type="number" class="form-control" id="strike_price" value="100" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="time_to_maturity">Time to Maturity (Years)</label>
+                                <input type="number" class="form-control" id="time_to_maturity" value="1" step="0.1" min="0.1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="volatility">Volatility (%)</label>
+                                <input type="number" class="form-control" id="volatility" value="20" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="risk_free_rate">Risk-Free Rate (%)</label>
+                                <input type="number" class="form-control" id="risk_free_rate" value="5" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="option_type">Option Type</label>
+                                <select class="form-control" id="option_type">
+                                    <option value="call">Call</option>
+                                    <option value="put">Put</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="updateTree()">Update Tree</button>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="price-display">
+                            <h4>Option Price</h4>
+                            <div class="price-value" id="option-price">
+                                $0.00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="binomial-tree-container">
+                <div id="tree-parameters" class="mb-3"></div>
+                <div id="binomial-tree-viz"></div>
+            </div>
+        </div>
+        -->
+        <div class="card">
+            <h3>About Me</h3>
+            <p>This is a personal project for my own use but if you have any additional ideas feel free to submit them to me. Feel free to browse my portfolio and reach out if you'd like to collaborate</p>
         </div>
 
-        <!-- Contact Form Section -->
         <div class="card">
             <h3>Contact Me</h3>
             <form method="POST" action="/submit-contact">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" 
-name="name" required>
+                    <input type="text" class="form-control" id="name" name="name" required>
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" 
-name="email" required>
+                    <input type="email" class="form-control" id="email" name="email" required>
                 </div>
                 <div class="form-group">
                     <label for="message">Message</label>
-                    <textarea class="form-control" id="message" 
-name="message" rows="4" required></textarea>
+                    <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn-primary">Send Message</button>
                 </div>
             </form>
         </div>
+        
+        
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         // Particle animation
         const canvas = document.getElementById('particles');
         const ctx = canvas.getContext('2d');
-        
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
+
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
         const particles = [];
+
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
@@ -177,6 +461,7 @@ name="message" rows="4" required></textarea>
                 this.speedX = Math.random() * 3 - 1.5;
                 this.speedY = Math.random() * 3 - 1.5;
             }
+
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
@@ -185,6 +470,7 @@ name="message" rows="4" required></textarea>
                 if (this.y > canvas.height) this.y = 0;
                 if (this.y < 0) this.y = canvas.height;
             }
+
             draw() {
                 ctx.fillStyle = "rgba(255,255,255,0.5)";
                 ctx.beginPath();
@@ -210,7 +496,979 @@ name="message" rows="4" required></textarea>
 
         init();
         animate();
+
+        function drawBinomialTree(data) {
+            // Clear previous visualization
+            d3.select("#binomial-tree-viz").html("");
+            
+            // Make visualization visible
+            document.getElementById('binomial-tree-viz').classList.add('visible');
+            
+            const width = 1100;
+            const height = 600; // Increased to accommodate additional label
+            const nodeRadius = 40;
+
+            const svg = d3.select("#binomial-tree-viz")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .style("background", "rgba(255, 255, 255, 0.05)")
+                .style("border-radius", "8px");
+
+            // Calculate positions with more space on sides
+            const levels = Math.max(...data.nodes.map(n => n.level)) + 1;
+            const levelWidth = (width - 300) / levels; // Reserve more space (300px) for EV node and explanation
+            const levelHeight = height / levels; // Position nodes with adjusted spacing
+
+            data.nodes.forEach(node => {
+                node.x = node.level * levelWidth + levelWidth / 2;
+                node.y = height / 2 + (node.position - node.level / 2) * levelHeight;
+            });
+
+            // Draw edges with probability labels
+            const edges = svg.selectAll("g.edge")
+                .data(data.edges)
+                .enter()
+                .append("g")
+                .attr("class", "edge");
+
+            edges.append("line")
+                .attr("x1", d => data.nodes.find(n => n.id === d.from).x)
+                .attr("y1", d => data.nodes.find(n => n.id === d.from).y)
+                .attr("x2", d => data.nodes.find(n => n.id === d.to).x)
+                .attr("y2", d => data.nodes.find(n => n.id === d.to).y)
+                .attr("stroke", "#4ade80")
+                .attr("stroke-width", 1);
+
+            edges.append("text")
+                .attr("x", d => (data.nodes.find(n => n.id === d.from).x + data.nodes.find(n => n.id === d.to).x) / 2)
+                .attr("y", d => (data.nodes.find(n => n.id === d.from).y + data.nodes.find(n => n.id === d.to).y) / 2)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#ffffff")
+                .attr("dy", "-5")
+                .text(d => {
+                    // Find the path to this node by traversing backwards
+                    let currentNode = data.nodes.find(n => n.id === d.to);
+                    let pathProb = d.probability;
+                    
+                    // Multiply by parent probabilities until we reach the root
+                    while (currentNode.level > 1) {
+                        const parentEdge = data.edges.find(e => e.to === currentNode.id);
+                        pathProb *= parentEdge.probability;
+                        currentNode = data.nodes.find(n => n.id === parentEdge.from);
+                    }
+                    
+                    return `${(pathProb * 100).toFixed(1)}%`;
+                });
+
+            // Draw nodes
+            const nodes = svg.selectAll("g.node")
+                .data(data.nodes)
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            nodes.append("circle")
+                .attr("r", nodeRadius)
+                .attr("fill", "rgba(255, 255, 255, 0.1)")
+                .attr("stroke", "#4ade80");
+
+            nodes.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "-0.5em")
+                .attr("fill", "#ffffff")
+                .text(d => `S: ${d.asset_price}`);
+
+            nodes.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "1em")
+                .attr("fill", "#4ade80")
+                .text(d => `V: ${d.option_value}`);
+
+            // Add Expected Value node
+            const evX = width - 250;
+            const evY = height / 2;
+
+            // Calculate expected value from terminal nodes
+            const terminalNodes = data.nodes.filter(n => n.level === levels - 1);
+            const expectedValue = terminalNodes.reduce((sum, node) => {
+                const pathProbability = calculatePathProbability(node, data);
+                return sum + (node.option_value * pathProbability);
+            }, 0);
+
+            // Draw EV node
+            const evNode = svg.append("g")
+                .attr("transform", `translate(${evX},${evY})`);
+
+            evNode.append("circle")
+                .attr("r", nodeRadius)
+                .attr("fill", "rgba(255, 255, 255, 0.1)")
+                .attr("stroke", "#f59e0b");
+
+            evNode.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "-0.5em")
+                .attr("fill", "#ffffff")
+                .text("EV");
+
+            evNode.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "1em")
+                .attr("fill", "#f59e0b")
+                .text(expectedValue.toFixed(2));
+
+            // Draw lines from terminal nodes to EV node
+            terminalNodes.forEach(node => {
+                if (node.option_value > 0) {
+                    const pathProb = calculatePathProbability(node, data);
+                    svg.append("line")
+                        .attr("x1", node.x)
+                        .attr("y1", node.y)
+                        .attr("x2", evX)
+                        .attr("y2", evY)
+                        .attr("stroke", "#f59e0b")
+                        .attr("stroke-width", pathProb * 2)
+                        .attr("stroke-dasharray", "5,5")
+                        .attr("opacity", 0.5);
+                }
+            });
+
+            // Display parameters
+            const params = data.parameters;
+            d3.select("#tree-parameters")
+                .html(`
+                    <div class="parameters-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div>Up Factor (u): <span class="text-success">${params.up_factor}</span></div>
+                        <div>Down Factor (d): <span class="text-success">${params.down_factor}</span></div>
+                        <div>Probability (p): <span class="text-success">${params.probability}</span></div>
+                        <div>Time Step (Δt): <span class="text-success">${params.delta_t}</span></div>
+                    </div>
+                `);
+
+            // Simplified discount calculation using user's risk-free rate directly
+            const riskFreeRate = data.parameters.risk_free_rate || 0.05;
+            const timeToMaturity = data.parameters.time_to_maturity || 1;
+            const discountedEV = expectedValue * Math.exp(-riskFreeRate * timeToMaturity);
+
+            // Add discount rate explanation box
+            const explanationBox = svg.append("g")
+                .attr("transform", `translate(${evX + nodeRadius * 1.5}, ${evY - nodeRadius * 2})`);
+
+            explanationBox.append("rect")
+                .attr("width", 180)
+                .attr("height", 100)
+                .attr("fill", "rgba(245, 158, 11, 0.1)")
+                .attr("stroke", "#f59e0b")
+                .attr("rx", 8)
+                .attr("ry", 8);
+
+            explanationBox.append("text")
+                .attr("x", 10)
+                .attr("y", 20)
+                .attr("fill", "#ffffff")
+                .text("Discount Process:");
+
+            explanationBox.append("text")
+                .attr("x", 10)
+                .attr("y", 45)
+                .attr("fill", "#f59e0b")
+                .text(`EV: $${expectedValue.toFixed(2)}`);
+
+            explanationBox.append("text")
+                .attr("x", 10)
+                .attr("y", 65)
+                .attr("fill", "#ffffff")
+                .text(`× e^(-${(riskFreeRate * 100).toFixed(1)}% × ${timeToMaturity})`);
+
+            explanationBox.append("text")
+                .attr("x", 10)
+                .attr("y", 85)
+                .attr("fill", "#4ade80")
+                .text(`= $${discountedEV.toFixed(2)}`);
+
+            // Add arrow from EV to explanation
+            svg.append("path")
+                .attr("d", `M ${evX + nodeRadius} ${evY} L ${evX + nodeRadius * 1.3} ${evY}`)
+                .attr("stroke", "#f59e0b")
+                .attr("stroke-width", 2)
+                .attr("marker-end", "url(#arrow)");
+
+            // Add arrowhead definition
+            svg.append("defs").append("marker")
+                .attr("id", "arrow")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 8)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#f59e0b");
+
+            // Add time periods visualization
+            const timelineY = height - 80;
+            const timelineX = width / 2;
+            const timelineWidth = 300;
+            const timeline = svg.append("g")
+                .attr("transform", `translate(${timelineX - timelineWidth / 2}, ${timelineY})`);
+
+            // Add time period markers
+            const periods = data.parameters.steps;
+            for (let i = 0; i <= periods; i++) {
+                const x = (i / periods) * timelineWidth;
+                timeline.append("line")
+                    .attr("x1", x)
+                    .attr("x2", x)
+                    .attr("y1", -5)
+                    .attr("y2", 5)
+                    .attr("stroke", "#4ade80");
+                timeline.append("text")
+                    .attr("x", x)
+                    .attr("y", 20)
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#ffffff")
+                    .text(`t${i}`);
+                if (i < periods) {
+                    timeline.append("text")
+                        .attr("x", x + timelineWidth / (2 * periods))
+                        .attr("y", -10)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#f59e0b")
+                        .text(`×(1+r)⁻¹`);
+                }
+            }
+
+            
+        }
+
+        // Helper function to calculate path probability to a terminal node
+        function calculatePathProbability(node, data) {
+            const nodeIds = node.id.split(',');
+            const level = parseInt(nodeIds[1]);
+            const position = parseInt(nodeIds[0]);
+            const p = data.parameters.probability;
+            // In a binomial tree, the probability of reaching a node is:
+            // C(n,k) * p^k * (1-p)^(n-k)
+            // where n is the level, k is the position, and C(n,k) is the binomial coefficient
+            return binomialCoefficient(level, position) * Math.pow(p, position) * Math.pow(1 - p, level - position);
+        }
+
+        // Helper function to calculate binomial coefficient
+        function binomialCoefficient(n, k) {
+            if (k === 0 || k === n) return 1;
+            if (k > n) return 0;
+            let result = 1;
+            for (let i = 1; i <= k; i++) {
+                result *= (n + 1 - i) / i;
+            }
+            return result;
+        }
+
+        function updateTree() {
+            // Add expanded class to container
+            const container = document.getElementById('binomial-tree-container');
+            const viz = document.getElementById('binomial-tree-viz');
+            
+            // Reset visualization state
+            viz.classList.remove('visible');
+            container.classList.add('expanded');
+            
+            // Allow transition to complete before drawing
+            setTimeout(() => {
+                const formData = {
+                    asset_price: parseFloat(document.getElementById('asset_price').value),
+                    strike_price: parseFloat(document.getElementById('strike_price').value),
+                    time_to_maturity: parseFloat(document.getElementById('time_to_maturity').value),
+                    volatility: parseFloat(document.getElementById('volatility').value) / 100,
+                    risk_free_rate: parseFloat(document.getElementById('risk_free_rate').value) / 100,
+                    option_type: document.getElementById('option_type').value,
+                    steps: 3
+                };
+
+                fetch('/binomial_tree_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.error) {
+                        drawBinomialTree(data);
+                        const priceDisplay = document.getElementById('option-price');
+                        const initialNode = data.nodes.find(n => n.level === 0);
+                        priceDisplay.textContent = `$${initialNode.option_value.toFixed(2)}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    container.classList.remove('expanded');
+                    viz.classList.remove('visible');
+                });
+            }, 100); // Small delay to ensure transition starts properly
+        }
+
+        // Modify the DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            // Don't automatically call updateTree() here anymore
+            // Instead, wait for user to click the button
+        });
+
+        function startIVSearch() {
+            const viz = document.getElementById('iv-search-viz');
+            viz.innerHTML = '';
+            
+            const marketPrice = parseFloat(document.getElementById('market_price').value);
+            let low = 0.01;
+            let high = 1.00;
+            let steps = [];
+            
+            // Calculate binary search steps
+            while (high - low > 0.0001 && steps.length < 15) {  // Limit to 15 steps max
+                const mid = (low + high) / 2;
+                const bsPrice = simulateBlackScholes(mid);
+                
+                steps.push({
+                    volatility: mid,
+                    price: bsPrice,
+                    range: [low, high]
+                });
+                
+                if (bsPrice < marketPrice) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+            
+            createAxisLabels(viz);
+            const targetLine = createTargetLine(viz, marketPrice);
+            const searchLine = createSearchLine(viz);
+            const searchPoint = createSearchPoint(viz);
+            
+            // Add legend
+            createLegend(viz);
+            
+            // Start animation
+            animateSearchSteps(steps, searchLine, searchPoint, marketPrice);
+        }
+        
+        function simulateBlackScholes(volatility) {
+            // Simplified BS model for demonstration
+            // Creates a curve that increases with volatility but not linearly
+            const basePrice = 5;
+            const volatilityEffect = Math.sqrt(volatility) * 10;
+            return basePrice + volatilityEffect;
+        }
+        
+        function createAxisLabels(container) {
+            // Y-axis
+            for (let i = 0; i <= 10; i++) {
+                const label = document.createElement('div');
+                label.className = 'axis-label';
+                label.style.left = '10px';
+                label.style.top = `${(100 - i * 10)}%`;
+                label.textContent = `$${i * 2}`;
+                container.appendChild(label);
+            }
+            
+            // X-axis
+            for (let i = 0; i <= 10; i++) {
+                const label = document.createElement('div');
+                label.className = 'axis-label';
+                label.style.left = `${i * 10}%`;
+                label.style.bottom = '10px';
+                label.textContent = `${i * 10}%`;
+                container.appendChild(label);
+                
+                // Add vertical grid line
+                const gridLine = document.createElement('div');
+                gridLine.className = 'grid-line vertical';
+                gridLine.style.left = `${i * 10}%`;
+                container.appendChild(gridLine);
+            }
+        }
+        
+        function createTargetLine(container, marketPrice) {
+            const line = document.createElement('div');
+            line.className = 'target-line';
+            const yPosition = 100 - (marketPrice / 20 * 100); // Scale to fit visualization
+            line.style.top = `${yPosition}%`;
+            
+            // Add label
+            const label = document.createElement('div');
+            label.className = 'target-label';
+            label.textContent = `Target: $${marketPrice.toFixed(2)}`;
+            label.style.position = 'absolute';
+            label.style.right = '10px';
+            label.style.top = `${yPosition - 20}px`;
+            label.style.color = '#f59e0b';
+            
+            container.appendChild(line);
+            container.appendChild(label);
+            return line;
+        }
+        
+        function createSearchLine(container) {
+            const line = document.createElement('div');
+            line.className = 'search-line';
+            container.appendChild(line);
+            return line;
+        }
+        
+        function createSearchPoint(container) {
+            const point = document.createElement('div');
+            point.className = 'search-point';
+            container.appendChild(point);
+            return point;
+        }
+        
+        function createLegend(container) {
+            const legend = document.createElement('div');
+            legend.className = 'legend';
+            legend.style.position = 'absolute';
+            legend.style.top = '20px';
+            legend.style.right = '20px';
+            legend.style.background = 'rgba(0, 0, 0, 0.7)';
+            legend.style.padding = '10px';
+            legend.style.borderRadius = '5px';
+            
+            legend.innerHTML = `
+                <div style="margin-bottom: 5px;">
+                    <span style="color: #f59e0b;">●</span> Current Guess
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <span style="color: #f59e0b; border-top: 2px dashed;">━━</span> Target Price
+                </div>
+                <div>
+                    <span style="color: #4ade80;">━━</span> Search Range
+                </div>
+            `;
+            
+            container.appendChild(legend);
+        }
+        
+        function animateSearchSteps(steps, searchLine, searchPoint, marketPrice) {
+            const svg = createSearchGraph(document.getElementById('iv-search-viz'));
+            
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    updateVisualization(step, searchLine, searchPoint, marketPrice);
+                    updateGraph(svg, steps, index);
+                    updateStatusText(step, marketPrice);
+                }, index * 1000);
+            });
+        }
+        
+        function updateVisualization(step, searchLine, searchPoint, marketPrice) {
+            // Update search range line
+            const rangeStart = step.range[0] * 100;
+            const rangeEnd = step.range[1] * 100;
+            searchLine.style.left = `${rangeStart}%`;
+            searchLine.style.width = `${rangeEnd - rangeStart}%`;
+            
+            // Update search point
+            const xPos = step.volatility * 100;
+            const yPos = 100 - (step.price / 20 * 100); // Scale to fit visualization
+            searchPoint.style.left = `${xPos}%`;
+            searchPoint.style.top = `${yPos}%`;
+            
+            // Add pulse animation to point
+            searchPoint.classList.remove('pulse');
+            void searchPoint.offsetWidth; // Trigger reflow
+            searchPoint.classList.add('pulse');
+        }
+        
+        function updateStatusText(step, marketPrice) {
+            const statusDiv = document.getElementById('search-status') || createStatusDiv();
+            const diff = Math.abs(step.price - marketPrice);
+            
+            statusDiv.innerHTML = `
+                <div style="margin-bottom: 5px;">
+                    Current Volatility: ${(step.volatility * 100).toFixed(1)}%
+                </div>
+                <div style="margin-bottom: 5px;">
+                    Price Difference: $${diff.toFixed(4)}
+                </div>
+                <div>
+                    Range: ${(step.range[0] * 100).toFixed(1)}% - ${(step.range[1] * 100).toFixed(1)}%
+                </div>
+            `;
+        }
+        
+        function createStatusDiv() {
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'search-status';
+            statusDiv.style.position = 'absolute';
+            statusDiv.style.left = '20px';
+            statusDiv.style.top = '20px';
+            statusDiv.style.background = 'rgba(0, 0, 0, 0.7)';
+            statusDiv.style.padding = '10px';
+            statusDiv.style.borderRadius = '5px';
+            statusDiv.style.color = '#ffffff';
+            
+            document.getElementById('iv-search-viz').appendChild(statusDiv);
+            return statusDiv;
+        }
+
+        function createSearchGraph(container) {
+            // Create SVG container for the graph
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "100%");
+            svg.style.position = "absolute";
+            svg.style.top = "0";
+            svg.style.left = "0";
+            svg.style.zIndex = "1";
+            container.appendChild(svg);
+            return svg;
+        }
+
+        function updateGraph(svg, steps, currentStep) {
+            // Convert SVG element to D3 selection if it isn't already
+            const d3Svg = d3.select(svg);
+            d3Svg.html(''); // Clear existing content
+            
+            const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+            const width = svg.clientWidth - margin.left - margin.right;
+            const height = svg.clientHeight - margin.top - margin.bottom;
+            
+            // Create main group element with margins
+            const g = d3Svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain([0, 1]) // 0% to 100% volatility
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(steps, d => d.price) * 1.2]) // Add 20% padding
+                .range([height, 0]);
+
+            // Create axes
+            const xAxis = d3.axisBottom(xScale)
+                .tickFormat(d => d * 100 + '%');
+            const yAxis = d3.axisLeft(yScale)
+                .tickFormat(d => '$' + d.toFixed(2));
+
+            // Add axes
+            g.append("g")
+                .attr("class", "x-axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(xAxis)
+                .append("text")
+                .attr("class", "axis-label")
+                .attr("x", width / 2)
+                .attr("y", 40)
+                .attr("fill", "#4ade80")
+                .style("text-anchor", "middle")
+                .text("Volatility");
+
+            g.append("g")
+                .attr("class", "y-axis")
+                .call(yAxis)
+                .append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -40)
+                .attr("x", -height / 2)
+                .attr("fill", "#4ade80")
+                .style("text-anchor", "middle")
+                .text("Option Price");
+
+            // Add grid lines
+            g.append("g")
+                .attr("class", "grid")
+                .attr("opacity", 0.1)
+                .call(d3.axisBottom(xScale)
+                    .tickSize(height)
+                    .tickFormat("")
+                );
+
+            g.append("g")
+                .attr("class", "grid")
+                .attr("opacity", 0.1)
+                .call(d3.axisLeft(yScale)
+                    .tickSize(-width)
+                    .tickFormat("")
+                );
+
+            // Create line generator for the search path
+            const line = d3.line()
+                .x(d => xScale(d.volatility))
+                .y(d => yScale(d.price))
+                .curve(d3.curveMonotoneX);
+
+            // Add target price line
+            const marketPrice = parseFloat(document.getElementById('market_price').value);
+            g.append("line")
+                .attr("class", "target-line")
+                .attr("x1", 0)
+                .attr("x2", width)
+                .attr("y1", yScale(marketPrice))
+                .attr("y2", yScale(marketPrice))
+                .attr("stroke", "#f59e0b")
+                .attr("stroke-width", 2)
+                .attr("stroke-dasharray", "5,5");
+
+            // Add target price label
+            g.append("text")
+                .attr("class", "target-label")
+                .attr("x", width + 5)
+                .attr("y", yScale(marketPrice))
+                .attr("dy", "0.35em")
+                .attr("fill", "#f59e0b")
+                .text(`Target: $${marketPrice.toFixed(2)}`);
+
+            // Create search path with animation
+            const path = g.append("path")
+                .datum(steps.slice(0, currentStep + 1))
+                .attr("class", "search-path")
+                .attr("fill", "none")
+                .attr("stroke", "url(#search-gradient)")
+                .attr("stroke-width", 2);
+
+            // Create gradient for the search path
+            const gradient = d3Svg.append("defs")
+                .append("linearGradient")
+                .attr("id", "search-gradient")
+                .attr("gradientUnits", "userSpaceOnUse");
+
+            gradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", "#4ade80");
+
+            gradient.append("stop")
+                .attr("offset", "100%")
+                .attr("stop-color", "#f59e0b");
+
+            // Animate the path
+            const pathLength = path.node().getTotalLength();
+            path.attr("stroke-dasharray", pathLength + " " + pathLength)
+                .attr("stroke-dashoffset", pathLength)
+                .attr("d", line)
+                .transition()
+                .duration(1000)
+                .attr("stroke-dashoffset", 0);
+
+            // Add nodes with tooltips
+            const nodes = g.selectAll(".search-node")
+                .data(steps.slice(0, currentStep + 1))
+                .enter()
+                .append("g")
+                .attr("class", "search-node")
+                .attr("transform", d => `translate(${xScale(d.volatility)},${yScale(d.price)})`);
+
+            // Add node circles with animation
+            nodes.append("circle")
+                .attr("r", 0)
+                .attr("fill", (d, i) => i === currentStep ? "#f59e0b" : "#4ade80")
+                .attr("opacity", 0.2)
+                .attr("stroke", (d, i) => i === currentStep ? "#f59e0b" : "#4ade80")
+                .attr("stroke-width", 2)
+                .transition()
+                .duration(500)
+                .attr("r", 6);
+
+            // Add volatility labels
+            nodes.append("text")
+                .attr("class", "vol-label")
+                .attr("y", -10)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#4ade80")
+                .attr("opacity", 0)
+                .text(d => `${(d.volatility * 100).toFixed(1)}%`)
+                .transition()
+                .duration(500)
+                .attr("opacity", 1);
+
+            // Add tooltips using tippy.js
+            nodes.each(function(d) {
+                tippy(this, {
+                    content: `
+                        <div class="tooltip-content">
+                            <div>Volatility: ${(d.volatility * 100).toFixed(1)}%</div>
+                            <div>Price: $${d.price.toFixed(2)}</div>
+                            <div>Range: ${(d.range[0] * 100).toFixed(1)}% - ${(d.range[1] * 100).toFixed(1)}%</div>
+                        </div>
+                    `,
+                    allowHTML: true,
+                    theme: 'dark',
+                    placement: 'top',
+                    animation: 'fade'
+                });
+            });
+
+            // Add legend
+            const legend = g.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(${width - 150}, 20)`);
+
+            legend.append("rect")
+                .attr("width", 140)
+                .attr("height", 80)
+                .attr("fill", "rgba(0, 0, 0, 0.7)")
+                .attr("rx", 5);
+
+            const legendItems = [
+                { color: "#f59e0b", label: "Current Guess" },
+                { color: "#f59e0b", label: "Target Price", dash: true },
+                { color: "#4ade80", label: "Search Path" }
+            ];
+
+            legendItems.forEach((item, i) => {
+                const legendItem = legend.append("g")
+                    .attr("transform", `translate(10, ${20 + i * 20})`);
+
+                if (item.dash) {
+                    legendItem.append("line")
+                        .attr("x1", 0)
+                        .attr("x2", 20)
+                        .attr("y1", 0)
+                        .attr("y2", 0)
+                        .attr("stroke", item.color)
+                        .attr("stroke-width", 2)
+                        .attr("stroke-dasharray", "5,5");
+                } else {
+                    legendItem.append("circle")
+                        .attr("r", 5)
+                        .attr("cx", 10)
+                        .attr("fill", item.color);
+                }
+
+                legendItem.append("text")
+                    .attr("x", 30)
+                    .attr("y", 0)
+                    .attr("dy", "0.35em")
+                    .attr("fill", "#ffffff")
+                    .text(item.label);
+            });
+        }
+
+        function showNodeTooltip(stepData, x, y) {
+            const tooltip = document.createElement("div");
+            tooltip.className = "node-tooltip";
+            tooltip.style.position = "absolute";
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y - 40}px`;
+            tooltip.style.background = "rgba(0, 0, 0, 0.8)";
+            tooltip.style.padding = "8px";
+            tooltip.style.borderRadius = "4px";
+            tooltip.style.color = "#ffffff";
+            tooltip.style.fontSize = "12px";
+            tooltip.style.zIndex = "1000";
+            tooltip.innerHTML = `
+                <div style="color: #4ade80;">Volatility: ${(stepData.volatility * 100).toFixed(1)}%</div>
+                <div style="color: #f59e0b;">Price: $${stepData.price.toFixed(2)}</div>
+                <div style="color: #ffffff;">Search Range: ${(stepData.range[0] * 100).toFixed(1)}% - ${(stepData.range[1] * 100).toFixed(1)}%</div>
+            `;
+            document.getElementById('iv-search-viz').appendChild(tooltip);
+        }
+
+        function hideNodeTooltip() {
+            const tooltip = document.querySelector(".node-tooltip");
+            if (tooltip) {
+                tooltip.remove();
+            }
+        }
+
+        function startMonteCarloSim() {
+            const viz = document.getElementById('monte-carlo-viz');
+            viz.innerHTML = '';
+            
+            // Set up SVG
+            const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+            const width = viz.clientWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+            
+            const svg = d3.select('#monte-carlo-viz')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Simulation parameters
+            const S0 = 100; // Initial stock price
+            const K = 100;  // Strike price
+            const T = 1;    // Time to maturity
+            const r = 0.05; // Risk-free rate
+            const sigma = 0.2; // Volatility
+            const numSteps = 252; // Daily steps for a year
+            const dt = T / numSteps;
+            const numPaths = parseInt(document.getElementById('mc_num_paths').value);
+            
+            // Generate paths
+            const paths = [];
+            let runningPayoffSum = 0;
+            let convergenceData = [];
+            
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain([0, T])
+                .range([0, width]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([50, 150]) // Adjusted for typical price range
+                .range([height, 0]);
+            
+            // Add axes
+            svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).tickFormat(d => d.toFixed(1)));
+            
+            svg.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(yScale));
+            
+            // Add labels
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height + 40)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#4ade80')
+                .text('Time (years)');
+            
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', -40)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#4ade80')
+                .text('Stock Price ($)');
+            
+            // Line generator
+            const line = d3.line()
+                .x((d, i) => xScale(i * dt))
+                .y(d => yScale(d));
+            
+            // Animate paths
+            function animatePath(pathData, index) {
+                const path = svg.append('path')
+                    .datum(pathData)
+                    .attr('class', 'mc-path')
+                    .attr('fill', 'none')
+                    .attr('stroke', index === 0 ? '#f59e0b' : '#4ade80')
+                    .attr('stroke-width', index === 0 ? 2 : 1)
+                    .attr('stroke-opacity', 0.5);
+                
+                const pathLength = path.node().getTotalLength();
+                
+                path.attr('stroke-dasharray', pathLength + ' ' + pathLength)
+                    .attr('stroke-dashoffset', pathLength)
+                    .attr('d', line)
+                    .transition()
+                    .duration(1000)
+                    .attr('stroke-dashoffset', 0);
+                
+                // Calculate and update running average
+                const finalPrice = pathData[pathData.length - 1];
+                const payoff = Math.max(finalPrice - K, 0);
+                runningPayoffSum += payoff;
+                const currentAverage = runningPayoffSum / (index + 1);
+                const discountedPrice = currentAverage * Math.exp(-r * T);
+                
+                convergenceData.push({
+                    paths: index + 1,
+                    price: discountedPrice
+                });
+                
+                updateConvergencePlot();
+            }
+            
+            // Generate and animate paths sequentially
+            for (let i = 0; i < numPaths; i++) {
+                const path = [S0];
+                for (let j = 1; j <= numSteps; j++) {
+                    const dW = Math.sqrt(dt) * d3.randomNormal()();
+                    const dS = r * path[j-1] * dt + sigma * path[j-1] * dW;
+                    path.push(path[j-1] + dS);
+                }
+                paths.push(path);
+                setTimeout(() => animatePath(path, i), i * 100);
+            }
+            
+            // Add convergence plot
+            const convergenceSvg = d3.select('#monte-carlo-viz')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            function updateConvergencePlot() {
+                // Clear previous plot
+                convergenceSvg.selectAll('*').remove();
+                
+                // Set up scales for convergence plot
+                const xScaleConv = d3.scaleLinear()
+                    .domain([1, numPaths])
+                    .range([0, width]);
+                
+                const yScaleConv = d3.scaleLinear()
+                    .domain([0, d3.max(convergenceData, d => d.price) * 1.2])
+                    .range([height, 0]);
+                
+                // Add axes
+                convergenceSvg.append('g')
+                    .attr('class', 'x-axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(xScaleConv));
+                
+                convergenceSvg.append('g')
+                    .attr('class', 'y-axis')
+                    .call(d3.axisLeft(yScaleConv));
+                
+                // Add labels
+                convergenceSvg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height + 40)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#4ade80')
+                    .text('Number of Paths');
+                
+                convergenceSvg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height / 2)
+                    .attr('y', -40)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#4ade80')
+                    .text('Option Price ($)');
+                
+                // Add convergence line
+                const convLine = d3.line()
+                    .x(d => xScaleConv(d.paths))
+                    .y(d => yScaleConv(d.price));
+                
+                convergenceSvg.append('path')
+                    .datum(convergenceData)
+                    .attr('class', 'convergence-line')
+                    .attr('fill', 'none')
+                    .attr('stroke', '#f59e0b')
+                    .attr('stroke-width', 2)
+                    .attr('d', convLine);
+                
+                // Add current price point
+                convergenceSvg.append('circle')
+                    .attr('cx', xScaleConv(convergenceData.length))
+                    .attr('cy', yScaleConv(convergenceData[convergenceData.length - 1].price))
+                    .attr('r', 5)
+                    .attr('fill', '#f59e0b');
+                
+                // Add current price label
+                convergenceSvg.append('text')
+                    .attr('x', width - 10)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'end')
+                    .attr('fill', '#f59e0b')
+                    .text(`Current Price: $${convergenceData[convergenceData.length - 1].price.toFixed(2)}`);
+            }
+        }
     </script>
 </body>
 </html>
-

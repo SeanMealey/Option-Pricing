@@ -63,8 +63,8 @@ that satisfies the equation:
 
    The steps of the binary search are as follows:
 
-   - **Step 1**: Initialize a range for \(\sigma\) (e.g., between 0 and 2, 
-where 0 represents no volatility and 2 is very high volatility).
+   - **Step 1**: Initialize a range for \(\sigma\) between 0 and 5, 
+where 0 represents no volatility and 5 is very high volatility.
    - **Step 2**: Calculate the option price using the Black-Scholes 
 formula at the midpoint of the current volatility range.
    - **Step 3**: If the calculated price is too high (i.e., \(C_{calc} > 

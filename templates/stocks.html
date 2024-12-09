@@ -40,13 +40,11 @@
             z-index: 1;
             top: 40px;
             left: 0;
-            background-color: rgb(24, 24, 24);
+            background-color: rgb(18, 18, 18);
             color: white;
             padding: 25px;
-            overflow-y: auto;
             padding-bottom: 300px;
             -ms-overflow-style: none;
-            scrollbar-width: none;
         }
 
         .sidenav h3 {
@@ -104,7 +102,7 @@
         }
 
         .card {
-            background-color: #1f1f1f;
+            background-color: black;
             border-radius: 8px;
             color: white;
         }
@@ -158,6 +156,10 @@
         .mdtext {
             padding-left: 15px;
         }
+        .iv-result {
+            font-family: roboto, sans-serif;
+            text-align: center;
+        }
         
 
     </style>
@@ -167,7 +169,7 @@
         <a href="/">Option Pricing</a>
         <a href="/exotic">American and Exotic Options</a>
         <a href="/stocks">Implied Volatility</a>
-        <a href="/about">Contact</a>
+        <a href="/about">About</a>
         <a href="https://github.com/SeanMealey/Option-Pricing" target="_blank" class="github-icon">
             <i class="fab fa-github"></i>
         </a> 
@@ -233,7 +235,10 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="iv-result" style="font-family: roboto, sans-serif;">
-                            Implied Volatility: 35.25%
+                            Implied Volatility:
+                        </h4>
+                        <h4 class="iv-result" style="font-family: roboto, sans-serif;">
+                            35.25%
                         </h4>
                     </div>
                 </div>
@@ -245,7 +250,9 @@
                         <h4 class="iv-result" style="font-family: roboto, sans-serif;">
                             Volatility Smile
                         </h4>
-                        <img src="data:image/png;base64,{{ nvda_default_plot }}" alt="Volatility Smile" class="img-fluid rounded">
+                        <div class="text-center">
+                            <img src="data:image/png;base64,{{ nvda_default_plot }}" alt="Volatility Smile" class="img-fluid rounded">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -263,9 +270,11 @@
                     <div class="col-12 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Calculated Result</h4>
                                 <h4 class="iv-result" style="font-family: roboto, sans-serif; text-align: center;">
-                                    Implied Volatility: {{ "%.2f"|format(result.implied_volatility) }}%
+                                    Implied Volatility:
+                                </h4>
+                                <h4 class="iv-result" style="font-family: roboto, sans-serif; text-align: center;">
+                                     {{ "%.2f"|format(result.implied_volatility) }}%
                                     {% if result.note %}
                                         <br><small>{{ result.note }}</small>
                                     {% endif %}
@@ -279,7 +288,9 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="card-title">Volatility Smile</h4>
+                                    <h4 class="card-title" style="font-family: roboto, sans-serif; text-align: center;">
+                                        Volatility Smile
+                                    </h4>
                                     <div class="text-center">
                                         <img src="data:image/png;base64,{{ volatility_smile_plot }}" 
                                              alt="Volatility Smile" 

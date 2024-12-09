@@ -51,6 +51,7 @@ def stocks():
             strike_price = float(request.form['strike_price'])
             dte = float(request.form['dte'])
             
+            
             # Get available expiration dates
             stock = yf.Ticker(ticker)
             available_dates = stock.options
@@ -63,16 +64,52 @@ def stocks():
                 abs(datetime.strptime(x, '%Y-%m-%d') - datetime.strptime(target_date, '%Y-%m-%d')))
             
             # Get available strikes for this expiration
-            chain = stock.option_chain(closest_date)
-            available_strikes = sorted(chain.calls['strike'].unique())
+            options = stock.option_chain(closest_date)
+            available_strikes = sorted(options.calls['strike'].unique())
             
             # Find closest strike
             closest_strike = min(available_strikes, key=lambda x: abs(x - strike_price))
+
+                
+            # Get calls data
+            calls = options.calls
             
-            result = get_implied_volatility(ticker, closest_strike, closest_date)
+            
+            # Find the option with matching strike
+            option = calls[calls['strike'] == closest_strike]
+            if option.empty:
+                return {'error': f'No option found for strike price {strike_price}. Available strikes: {sorted(calls["strike"].unique())}'}
+                
+            # Get the market price and current stock price
+            market_price = option['lastPrice'].iloc[0]
+            if market_price <= 0:
+                return {'error': f'Invalid market price {market_price}'}
+            
+                
+            current_price = stock.history(period='1d')['Close'].iloc[-1]
+            
+            # Calculate time to expiration in years
+            time_to_maturity = dte / 365.0
+            
+            # Use 5% as the risk-free rate (you might want to fetch this from a reliable source)
+            risk_free_rate = yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100
+
+
+            
+            result = get_implied_volatility(ticker, strike_price, market_price, current_price, time_to_maturity, risk_free_rate)
             iv = result['implied_volatility']
 
-            volatility_smile_plot = generate_volatility_smile(available_strikes, iv, ticker, closest_date)
+            implied_vol = calculate_implied_volatility(
+                market_price=market_price,
+                asset_price=current_price,
+                strike_price=strike_price,
+                time_to_maturity=time_to_maturity,
+                risk_free_rate=risk_free_rate,
+                option_type='call'
+            )
+    
+            volatility_smile_plot = generate_volatility_smile(available_strikes, iv, ticker, market_price, current_price, time_to_maturity, risk_free_rate)
+
 
             
             return render_template('stocks.html', result=result, iv=iv, volatility_smile_plot=volatility_smile_plot, html_content=html_content)
@@ -94,7 +131,7 @@ def stocks():
     # Return template with both markdown content and any other necessary variables
     return render_template('stocks.html', html_content=html_content)
 
-def generate_volatility_smile(available_strikes, iv, ticker, closest_date):
+def generate_volatility_smile(available_strikes, iv, ticker, market_price, current_price, time_to_maturity, risk_free_rate):
     iv_values = []
     valid_strikes = []
     
@@ -115,8 +152,13 @@ def generate_volatility_smile(available_strikes, iv, ticker, closest_date):
     chain = stock.option_chain(thirty_day_expiry)
     available_strikes = sorted(chain.calls['strike'].unique())
     
+
+    calls = chain.calls
+
     for strike in available_strikes:
-        result = get_implied_volatility(ticker, strike, thirty_day_expiry)
+        option = calls[calls['strike'] == strike]
+        market_price = option['lastPrice'].iloc[0]
+        result = get_implied_volatility(ticker, strike, market_price, current_price, time_to_maturity, risk_free_rate)
         # Only append values if IV is >= 1
         if result.get('implied_volatility', 0) >= 1:
             iv_values.append(result['implied_volatility'])
@@ -567,38 +609,6 @@ def index():
                          vega_chart_data=option_data['vega_chart_data'],
                          form_data=form_data)
 
-def get_option_market_price(ticker, strike_price, expiration_date, option_type='call'):
-    """Get market price for an option using yfinance."""
-    try:
-        stock = yf.Ticker(ticker)
-        options = stock.option_chain(expiration_date)
-        
-        # Select calls or puts based on option_type
-        chain = options.calls if option_type.lower() == 'call' else options.puts
-        
-        # Find options with the exact strike price
-        matching_options = chain[chain['strike'] == strike_price]
-        
-        if matching_options.empty:
-            # If no exact match, find the closest available strike
-            available_strikes = chain['strike'].values
-            closest_strike = min(available_strikes, key=lambda x: abs(x - strike_price))
-            matching_options = chain[chain['strike'] == closest_strike]
-            
-        if matching_options.empty:
-            return None
-            
-        option = matching_options.iloc[0]
-        
-        # Check if we have valid bid/ask prices
-        if option['bid'] == 0 and option['ask'] == 0:
-            return None
-            
-        return (option['bid'] + option['ask']) / 2
-        
-    except Exception as e:
-        print(f"Error fetching option market price: {e}")
-        return None
 
 def calculate_implied_volatility(market_price, asset_price, strike_price, time_to_maturity, 
                                risk_free_rate, option_type='call', tolerance=0.1):
@@ -638,45 +648,14 @@ def calculate_implied_volatility(market_price, asset_price, strike_price, time_t
     
     return (vol_low + vol_high) / 2
 
-def get_implied_volatility(ticker, strike_price, expiration_date):
-    try:
-        # Get the stock data
-        stock = yf.Ticker(ticker)
 
-        # Get the option chain
-        options = stock.option_chain(expiration_date)
-        if options is None:
-            return {'error': f'No option chain found for {ticker} on {expiration_date}'}
-            
-        # Get calls data
-        calls = options.calls
+def get_implied_volatility(ticker, strike_price, market_price, current_price, time_to_maturity, risk_free_rate):
+    try:
         
-        
-        # Find the option with matching strike
-        option = calls[calls['strike'] == strike_price]
-        if option.empty:
-            return {'error': f'No option found for strike price {strike_price}. Available strikes: {sorted(calls["strike"].unique())}'}
-            
-        # Get the market price and current stock price
-        market_price = option['lastPrice'].iloc[0]
-        if market_price <= 0:
-            return {'error': f'Invalid market price {market_price}'}
-        
-        yf_implied_vol = float(option['impliedVolatility'].iloc[0])
-        # print(f"\nYFinance Implied Volatility: {round(yf_implied_vol * 100, 2)}%")
-            
-        current_price = stock.history(period='1d')['Close'].iloc[-1]
-        
-        # Calculate time to expiration in years
-        expiry_date = datetime.strptime(expiration_date, '%Y-%m-%d')
-        days_to_expiry = (expiry_date - datetime.now()).days
-        time_to_maturity = days_to_expiry / 365.0
-        
-        # Use 5% as the risk-free rate (you might want to fetch this from a reliable source)
-        risk_free_rate = yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100
         
         # Calculate implied volatility
         try:
+
             implied_vol = calculate_implied_volatility(
                 market_price=market_price,
                 asset_price=current_price,
@@ -689,7 +668,7 @@ def get_implied_volatility(ticker, strike_price, expiration_date):
             if implied_vol is None:
                 return {'error': 'Could not converge on implied volatility'}
             
-            # print(implied_vol)
+            print(implied_vol)
                 
             # Convert to percentage and round to 2 decimal places
             implied_vol_percentage = round(implied_vol * 100, 2)
@@ -698,7 +677,6 @@ def get_implied_volatility(ticker, strike_price, expiration_date):
                 'implied_volatility': implied_vol_percentage,
                 'market_price': market_price,
                 'current_price': current_price,
-                'days_to_expiry': days_to_expiry
             }
             
         except Exception as e:
@@ -817,6 +795,92 @@ def calculate_exotic():
 
     except Exception as e:
         return jsonify({'error': f'Error processing request: {str(e)}'}), 500
+
+@app.route('/binomial_tree_data', methods=['POST'])
+def generate_binomial_tree_visualization():
+    asset_price = float(request.json.get('asset_price'))
+    strike_price = float(request.json.get('strike_price'))
+    time_to_maturity = float(request.json.get('time_to_maturity'))
+    volatility = float(request.json.get('volatility'))
+    risk_free_rate = float(request.json.get('risk_free_rate'))
+    option_type = request.json.get('option_type')
+    steps = 4  # Base number of steps
+    total_steps = steps + 1  # Add one more step for the additional layer
+    
+    dt = time_to_maturity / steps
+    u = np.exp(volatility * np.sqrt(dt))
+    d = 1 / u
+    p = (np.exp(risk_free_rate * dt) - d) / (u - d)
+
+    # Initialize larger arrays to accommodate the additional layer
+    price_tree = np.zeros((total_steps + 1, total_steps + 1))
+    option_tree = np.zeros((total_steps + 1, total_steps + 1))
+    
+    # Calculate asset prices for all nodes including additional layer
+    for i in range(total_steps + 1):
+        for j in range(i + 1):
+            price_tree[j, i] = asset_price * (u**j) * (d**(i - j))
+            
+            # Calculate option values at terminal nodes
+            if i == total_steps:
+                if option_type == 'call':
+                    option_tree[j, i] = max(0, price_tree[j, i] - strike_price)
+                else:
+                    option_tree[j, i] = max(0, strike_price - price_tree[j, i])
+
+    # Backward induction for option values
+    for i in range(total_steps - 1, -1, -1):
+        for j in range(i + 1):
+            continuation = (p * option_tree[j + 1, i + 1] + (1 - p) * option_tree[j, i + 1]) * np.exp(-risk_free_rate * dt)
+            if option_type == 'call':
+                option_tree[j, i] = max(price_tree[j, i] - strike_price, continuation)
+            else:
+                option_tree[j, i] = max(strike_price - price_tree[j, i], continuation)
+
+    # Format data for visualization
+    nodes = []
+    edges = []
+    
+    # Create nodes and edges for all levels including additional layer
+    for i in range(total_steps + 1):
+        for j in range(i + 1):
+            node_id = f"{j},{i}"
+            nodes.append({
+                'id': node_id,
+                'asset_price': round(price_tree[j, i], 2),
+                'option_value': round(option_tree[j, i], 2),
+                'level': i,
+                'position': j
+            })
+            
+            # Add edges to next level (except for the last level)
+            if i < total_steps:
+                edges.append({
+                    'from': node_id,
+                    'to': f"{j},{i+1}",
+                    'movement': 'down',
+                    'probability': round(1-p, 3)
+                })
+                edges.append({
+                    'from': node_id,
+                    'to': f"{j+1},{i+1}",
+                    'movement': 'up',
+                    'probability': round(p, 3)
+                })
+
+    return {
+        'nodes': nodes,
+        'edges': edges,
+        'parameters': {
+            'up_factor': round(u, 3),
+            'down_factor': round(d, 3),
+            'probability': round(p, 3),
+            'delta_t': round(dt, 3),
+            'risk_free_rate': risk_free_rate,
+            'time_to_maturity': time_to_maturity,
+            'steps': total_steps
+        }
+    }
 
 if __name__ == '__main__':
     app.run(debug=True)
