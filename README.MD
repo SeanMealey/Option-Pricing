@@ -178,7 +178,6 @@ Calculate prices for American and exotic options using advanced numerical method
 
 ---
 
-## Technologies and Skills Demonstrated
 
 **Front-End**:
 
@@ -196,14 +195,6 @@ Calculate prices for American and exotic options using advanced numerical method
 - **yfinance API**: Fetched real-time financial data for stocks and options.
 - **Markdown Rendering**: Employed markdown and LaTeX rendering for mathematical content.
 
-**Skills Demonstrated**:
-
-- **Financial Mathematics**: Applied advanced mathematical models for option pricing.
-- **Numerical Methods**: Used algorithms like binary search for implied volatility and binomial trees for option valuation.
-- **Data Visualization**: Presented complex data interactively using modern visualization libraries.
-- **API Integration**: Integrated external APIs to fetch and process live financial data.
-- **Full-Stack Development**: Combined front-end and back-end technologies to deliver a seamless user experience.
-- **Responsive Design**: Ensured the application is accessible and responsive across various devices.
 
 ---
 
