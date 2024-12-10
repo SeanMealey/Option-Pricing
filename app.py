@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import numpy as np
 from scipy.stats import norm
 import scipy.stats as stats
@@ -17,6 +17,13 @@ import os
 
 app = Flask(__name__)
 
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt', mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
 
 @app.route('/about', methods=['GET', 'POST'])
 def about():
@@ -806,6 +813,7 @@ def generate_binomial_tree_visualization():
             'steps': total_steps
         }
     }
+
 
 if __name__ == '__main__':
     app.run(debug=True)
