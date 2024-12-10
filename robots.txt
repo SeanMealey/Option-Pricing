@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /exotic-options
+Allow: /implied-volatility
+Allow: /about
+Disallow: /submit-contact
+Disallow: /binomial_tree_data
+Disallow: /calculate_exotic
+Disallow: /load_ticker_data
+
+# API endpoints and data routes
+Disallow: /*_data
+Disallow: /api/*
+
+# Sitemap
+Sitemap: http://optionpricingandanalytics.com/sitemap.xml

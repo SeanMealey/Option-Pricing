@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exotic Options Pricing</title>
@@ -335,13 +336,13 @@
 
 
     <div class="top-banner">
-        <a href="/">Option Pricing</a>
-        <a href="/exotic">American and Exotic Options</a>
-        <a href="/stocks">Implied Volatility</a>
+        <a href="/">European Options</a>
+        <a href="/exotic-options">American and Exotic Options</a>
+        <a href="/implied-volatility">Implied Volatility</a>
         <a href="/about">About</a>
         <a href="https://github.com/SeanMealey/Option-Pricing" target="_blank" class="github-icon">
             <i class="fab fa-github"></i>
-        </a> 
+        </a>
     </div>
 
     <div class="sidenav">
@@ -372,7 +373,7 @@
 
             <label for="strikePrice">Strike Price</label>
             <input type="number" step="0.01" id="strikePrice" name="strike_price" value="{{ form_data['strike_price'] }}" required>
-            <input type="range" id="strikePriceSlider" name="strike_price_slider" min="0" max="1000" step="1" value="{{ form_data['strike_price'] }}">
+            <input type="range" id="strikePriceSlider" name="strike_price_slider" min="1" max="1000" step="1" value="{{ form_data['strike_price'] }}">
 
             <label for="time_to_maturity">Time to Maturity (years)</label>
             <input type="number" step="0.01" id="time_to_maturity" name="time_to_maturity" value="{{ form_data['time_to_maturity'] }}" required>

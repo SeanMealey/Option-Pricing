@@ -17,9 +17,6 @@ import os
 
 app = Flask(__name__)
 
-@app.route('/strategies', methods=['GET', 'POST'])
-def strategies():
-    return render_template('strategies.html')
 
 @app.route('/about', methods=['GET', 'POST'])
 def about():
@@ -30,10 +27,10 @@ def contact():
     return render_template('thanks.html')
 
 
-@app.route('/stocks', methods=['GET', 'POST'])
-def stocks():
+@app.route('/implied-volatility', methods=['GET', 'POST'])
+def implied_volatility():
     # Read markdown content from file
-    print('MARKDOWN')
+    # print('MARKDOWN')
     with open('templates/iv-explanation.md', 'r') as f:
         markdown_content = f.read()
     
@@ -101,22 +98,22 @@ def stocks():
 
 
             
-            return render_template('stocks.html', result=result, iv=iv, volatility_smile_plot=volatility_smile_plot, html_content=html_content, closest_strike=closest_strike)
+            return render_template('implied-volatility.html', result=result, iv=iv, volatility_smile_plot=volatility_smile_plot, html_content=html_content, closest_strike=closest_strike)
                                  
         except Exception as e:
-            return render_template('stocks.html',
+            return render_template('implied-volatility.html',
                                  result={'error': f'Error: {str(e)}'},
                                  form_data=request.form)
 
     try:
         with open('static/plots/volatility_smile_NVDA_2025-01-03.png', 'rb') as f:
             nvda_default_plot = base64.b64encode(f.read()).decode('utf-8')
-        return render_template('stocks.html', 
+        return render_template('implied-volatility.html', 
                             html_content=html_content,
                             nvda_default_plot=nvda_default_plot)
     except FileNotFoundError:
-        return render_template('stocks.html', html_content=html_content)
-    return render_template('stocks.html', html_content=html_content)
+        return render_template('implied-volatility.html', html_content=html_content)
+    return render_template('implied-volatility.html', html_content=html_content)
 
 def generate_volatility_smile(available_strikes, iv, ticker, market_price, current_price, time_to_maturity, risk_free_rate):
     iv_values = []
@@ -180,8 +177,8 @@ def generate_volatility_smile(available_strikes, iv, ticker, market_price, curre
     return None
 
 
-@app.route('/exotic', methods=['GET', 'POST'])
-def exotic():
+@app.route('/exotic-options', methods=['GET', 'POST'])
+def exotic_options():
     result = None
     calendar_spread_data = None
     
@@ -220,7 +217,7 @@ def exotic():
                 'barrier_type': request.form['barrier_type'] if 'barrier_type' in request.form else None
             }
         except ValueError:
-            return render_template('exotic.html', error="Error: Invalid input. Please enter valid numbers.", form_data=form_data)
+            return render_template('exotic-options.html', error="Error: Invalid input. Please enter valid numbers.", form_data=form_data)
 
     try:
         if form_data['exotic_type'] == 'asian':
@@ -275,9 +272,9 @@ def exotic():
                 form_data['option_type']
             )
     except Exception as e:
-        return render_template('exotic.html', error=f"Error in calculation: {str(e)}", form_data=form_data)
+        return render_template('exotic-options.html', error=f"Error in calculation: {str(e)}", form_data=form_data)
 
-    return render_template('exotic.html', result=result, calendar_spread_data=calendar_spread_data, form_data=form_data)
+    return render_template('exotic-options.html', result=result, calendar_spread_data=calendar_spread_data, form_data=form_data)
 
 
 #option varieties
@@ -596,7 +593,7 @@ def get_implied_volatility(ticker, strike_price, market_price, current_price, ti
             if implied_vol is None:
                 return {'error': 'Could not converge on implied volatility'}
             
-            print(implied_vol)
+            # print(implied_vol)
                 
             # Convert to percentage and round to 2 decimal places
             implied_vol_percentage = round(implied_vol * 100, 2)
