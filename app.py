@@ -101,7 +101,7 @@ def stocks():
 
 
             
-            return render_template('stocks.html', result=result, iv=iv, volatility_smile_plot=volatility_smile_plot, html_content=html_content)
+            return render_template('stocks.html', result=result, iv=iv, volatility_smile_plot=volatility_smile_plot, html_content=html_content, closest_strike=closest_strike)
                                  
         except Exception as e:
             return render_template('stocks.html',

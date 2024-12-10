@@ -201,7 +201,7 @@
             
             <div class="mb-3">
                 <label for="strike_price" class="form-label">Strike Price</label>
-                <input type="number" class="form-control" id="strike_price" name="strike_price" value="{{ request.form.get('strike_price', '') }}" required>
+                <input type="number" class="form-control" id="strike_price" name="strike_price" value="{{ closest_strike if closest_strike else request.form.get('strike_price', '') }}" required>
             </div>
             
             <div class="mb-3">
