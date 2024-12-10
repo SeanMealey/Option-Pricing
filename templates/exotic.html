@@ -581,7 +581,6 @@
             });
         });
 
-        // Add this function at the start of your scripts
         function setupSliderSync(inputId, sliderId) {
             const input = document.getElementById(inputId);
             const slider = document.getElementById(sliderId);
@@ -591,13 +590,11 @@
                 return;
             }
 
-            // Sync slider to input
             slider.addEventListener('input', function() {
                 input.value = this.value;
                 debounceSubmit();
             });
 
-            // Sync input to slider
             input.addEventListener('input', function() {
                 slider.value = this.value;
                 debounceSubmit();
@@ -619,7 +616,7 @@
             document.getElementById('optionForm').dispatchEvent(new Event('submit'));
         }
 
-        const debounceSubmit = debounce(submitForm, 1000); // 1000ms delay
+        const debounceSubmit = debounce(submitForm, 5); // 1000ms delay
 
         document.addEventListener('DOMContentLoaded', function() {
             // Setup sync for all slider pairs
@@ -632,7 +629,6 @@
             const form = document.getElementById('optionForm');
             const inputs = form.querySelectorAll('input, select');
 
-            // Add change listener to non-range inputs
             inputs.forEach(input => {
                 if (input.type !== 'range') {
                     input.addEventListener('change', debounceSubmit);
@@ -648,34 +644,36 @@
                         <div class="mb-3">
                             <label for="averagePrice" class="form-label">Average Price</label>
                             <input type="number" step="0.01" class="form-control" id="averagePrice" name="average_price" 
-                                value="{{ form_data['average_price']|default('')|tojson }}">
+                                value="${document.getElementById('assetPrice').value || 100}">
                         </div>`;
                 } else if (this.value === 'digital') {
                     additionalFields.innerHTML = `
                         <div class="mb-3">
                             <label for="payout" class="form-label">Payout</label>
                             <input type="number" step="0.01" class="form-control" id="payout" name="payout"
-                                value="{{ form_data['payout']|default('')|tojson }}">
+                                value="${document.getElementById('assetPrice').value/5 || 20}">
                         </div>`;
                 } else if (this.value === 'lookback') {
+                    const assetPrice = parseFloat(document.getElementById('assetPrice').value) || 100;
                     additionalFields.innerHTML = `
                         <div class="mb-3">
                             <label for="maxPrice" class="form-label">Max Price</label>
                             <input type="number" step="0.01" class="form-control" id="maxPrice" name="max_price"
-                                value="{{ form_data['max_price']|default('')|tojson }}">
+                                value="${assetPrice * 1.5}">
                         </div>
                         <div class="mb-3">
                             <label for="minPrice" class="form-label">Min Price</label>
                             <input type="number" step="0.01" class="form-control" id="minPrice" name="min_price"
-                                value="{{ form_data['min_price']|default('')|tojson }}">
+                                value="${assetPrice * 0.5}">
                         </div>`;
                 }
                 else if (this.value === 'barrier') {
+                    const assetPrice = parseFloat(document.getElementById('assetPrice').value) || 100;
                     additionalFields.innerHTML = `
                         <div class="mb-3">
                             <label for="barrierPrice" class="form-label">Barrier Price</label>
                             <input type="number" step="0.01" class="form-control" id="barrierPrice" name="barrier_price"
-                                value="{{ form_data['barrier_price']|default('')|tojson }}">
+                                value="${assetPrice * 1.2}">
                         </div>
                         <div class="mb-3">
                             <label for="barrierType" class="form-label">Barrier Type</label>

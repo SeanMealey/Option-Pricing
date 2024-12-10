@@ -352,7 +352,6 @@
                                 </div>
                             </div>
 
-                            <!-- Add this after the Delta and Gamma charts -->
                             <div class="row mt-4">
                                 <div class="col-md-6">
                                     <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Theta Decay</h1>
@@ -370,7 +369,6 @@
                             <p>
                                 <p></p>
                             </p>
-                            <!-- Add this to your row of charts -->
                             <div>
                                 <h1 style="color: white; font-family: Georgia, serif; font-weight: bold; text-align:center">Volatility Sensitivity</h1>
                                 <div class="visual-placeholder" style="height: 400px; width: 100%; position: relative; background-color: black; border: 1px solid #333;">
@@ -396,17 +394,15 @@
                 return;
             }
 
-            // Sync slider to input
             slider.addEventListener('input', function() {
-                input.value = this.value; // Update input value
+                input.value = this.value; 
             });
 
-            // Sync input to slider
             input.addEventListener('input', function() {
-                slider.value = this.value; // Update slider value
+                slider.value = this.value; 
             });
 
-            // Add this event listener to trigger results update when slider stops moving
+            // Listener to trigger results update when slider stops moving
             slider.addEventListener('change', function() {
                 $('.btn-primary').trigger('click'); // Trigger the button click to update results
             });
@@ -769,9 +765,7 @@
             }
         });
     </script>
-    <script>
-        // ... existing code ...
-    
+    <script>    
         // Rho Chart configuration
         const rhoCtx = document.getElementById('rhoChart');
         if (rhoCtx && {{ rho_chart_data|tojson|safe }}) {
@@ -898,7 +892,6 @@
         }
     </script>
     <script>
-
         // Vega Chart configuration
         const vegaCtx = document.getElementById('vegaChart');
         if (vegaCtx) {
@@ -1622,7 +1615,6 @@
             }
         }
     </script>
-    <!-- Add this script just before the closing </body> tag -->
     <script>
         // Update slider fill on input
         const rangeInputs = document.querySelectorAll('input[type="range"]');

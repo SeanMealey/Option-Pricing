@@ -50,37 +50,27 @@ def stocks():
             ticker = request.form['ticker']
             strike_price = float(request.form['strike_price'])
             dte = float(request.form['dte'])
-            
-            
             # Get available expiration dates
             stock = yf.Ticker(ticker)
             available_dates = stock.options
-            
             # Calculate target date
             target_date = (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%d')
-            
             # Find closest expiration
             closest_date = min(available_dates, key=lambda x: 
                 abs(datetime.strptime(x, '%Y-%m-%d') - datetime.strptime(target_date, '%Y-%m-%d')))
-            
             # Get available strikes for this expiration
             options = stock.option_chain(closest_date)
             available_strikes = sorted(options.calls['strike'].unique())
-            
             # Find closest strike
             closest_strike = min(available_strikes, key=lambda x: abs(x - strike_price))
-
-                
             # Get calls data
             calls = options.calls
-            
             
             # Find the option with matching strike
             option = calls[calls['strike'] == closest_strike]
             if option.empty:
                 return {'error': f'No option found for strike price {strike_price}. Available strikes: {sorted(calls["strike"].unique())}'}
                 
-            # Get the market price and current stock price
             market_price = option['lastPrice'].iloc[0]
             if market_price <= 0:
                 return {'error': f'Invalid market price {market_price}'}
@@ -91,7 +81,6 @@ def stocks():
             # Calculate time to expiration in years
             time_to_maturity = dte / 365.0
             
-            # Use 5% as the risk-free rate (you might want to fetch this from a reliable source)
             risk_free_rate = yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100
 
 
@@ -126,9 +115,7 @@ def stocks():
                             html_content=html_content,
                             nvda_default_plot=nvda_default_plot)
     except FileNotFoundError:
-        # If file doesn't exist, render template without plot
         return render_template('stocks.html', html_content=html_content)
-    # Return template with both markdown content and any other necessary variables
     return render_template('stocks.html', html_content=html_content)
 
 def generate_volatility_smile(available_strikes, iv, ticker, market_price, current_price, time_to_maturity, risk_free_rate):
@@ -166,7 +153,6 @@ def generate_volatility_smile(available_strikes, iv, ticker, market_price, curre
 
     # print(iv_values)
     # print(valid_strikes)
-    # Only create plot if we have data
     if iv_values and valid_strikes:
         plt.figure(figsize=(10, 6))
         plt.plot(valid_strikes, iv_values, marker='o', linestyle='-', linewidth=2)
@@ -194,21 +180,10 @@ def generate_volatility_smile(available_strikes, iv, ticker, market_price, curre
     return None
 
 
-def get_stock_data(ticker):
-    stock = yf.Ticker(ticker)
-    stock_info = stock.history(period='1d')
-    return {
-        'underlying_price': stock_info['Close'].iloc[-1],
-        'last': stock_info['Close'].iloc[-1],
-        'bid': stock_info['Close'].iloc[-1],  # Substitute with real bid if available
-        'ask': stock_info['Close'].iloc[-1],  # Substitute with real ask if available
-    }
-
 @app.route('/exotic', methods=['GET', 'POST'])
 def exotic():
     result = None
     calendar_spread_data = None
-    
     
     # Default values
     form_data = {
@@ -216,7 +191,7 @@ def exotic():
         'strike_price': 100,
         'time_to_maturity': 1,
         'volatility': 0.2,
-        'risk_free_rate': float(yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100),
+        'risk_free_rate': round(float(yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100), 4),
         'option_type': 'call',
         'exotic_type': 'american',
         'average_price': None,
@@ -229,7 +204,6 @@ def exotic():
 
     if request.method == 'POST':
         try:
-            # Update form_data with POST values
             form_data = {
                 'asset_price': float(request.form['asset_price']),
                 'strike_price': float(request.form['strike_price']),
@@ -248,7 +222,6 @@ def exotic():
         except ValueError:
             return render_template('exotic.html', error="Error: Invalid input. Please enter valid numbers.", form_data=form_data)
 
-    # Calculate result for both GET and POST requests
     try:
         if form_data['exotic_type'] == 'asian':
             result = asian_option_pricing(
@@ -307,52 +280,10 @@ def exotic():
     return render_template('exotic.html', result=result, calendar_spread_data=calendar_spread_data, form_data=form_data)
 
 
-def load_ticker_data_logic(ticker):
-    """Core logic separated from the route handler"""
-    try:
-        if not ticker:
-            return {'error': 'No ticker provided'}
-
-        # Get stock data
-        stock = yf.Ticker(ticker)
-        current_price = stock.history(period='1d')['Close'].iloc[-1]
-        
-        # Get options chain for the nearest expiration
-        expirations = stock.options
-        if not expirations:
-            return {'error': 'No options data available for this ticker'}
-        
-        nearest_expiration = expirations[0]
-        chain = stock.option_chain(nearest_expiration)
-        
-        # Find ATM strike price
-        strikes = chain.calls['strike'].values
-        strike_price = strikes[abs(strikes - current_price).argmin()]
-        
-        # Calculate DTE
-        expiry_date = datetime.strptime(nearest_expiration, '%Y-%m-%d')
-        dte = (expiry_date - datetime.now()).days
-        
-        # Get historical volatility
-        hist_data = stock.history(period='1mo')
-        hist_volatility = hist_data['Close'].pct_change().std() * (252 ** 0.5) * 100
-        
-        return {
-            'asset_price': float(current_price),
-            'strike_price': float(strike_price),
-            'time_to_maturity': dte/365,  # Convert to years
-            'risk_free_rate': yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100,
-            'volatility': round(float(hist_volatility), 2)
-        }
-
-    except Exception as e:
-        return {'error': f'Error loading data: {str(e)}'}
-
-
 #option varieties
 def barrier_option_pricing(asset_price, strike_price, time_to_maturity, volatility, risk_free_rate, option_type, barrier, barrier_type):
     """Price barrier options (Knock-In, Knock-Out) using analytical formulas."""
-    # Calculate standard Black-Scholes parameters
+    # Calculate Black-Scholes parameters
     sigma_sqt = volatility * np.sqrt(time_to_maturity)
     d1 = (np.log(asset_price / strike_price) + (risk_free_rate + 0.5 * volatility**2) * time_to_maturity) / sigma_sqt
     d2 = d1 - sigma_sqt
@@ -362,7 +293,7 @@ def barrier_option_pricing(asset_price, strike_price, time_to_maturity, volatili
     lambda_param = (mu + 0.5 * volatility**2) / volatility**2
     y = np.log(barrier**2 / (asset_price * strike_price)) / (volatility * np.sqrt(time_to_maturity))
     
-    # Standard Black-Scholes prices
+    #Black-Scholes prices
     if option_type == 'call':
         vanilla_price = (asset_price * stats.norm.cdf(d1) - 
                         strike_price * np.exp(-risk_free_rate * time_to_maturity) * stats.norm.cdf(d2))
@@ -384,7 +315,7 @@ def binomial_tree_american(asset_price, strike_price, time_to_maturity, volatili
     dt = time_to_maturity / int(steps)
     u = np.exp(volatility * np.sqrt(dt))  # Up factor
     d = 1 / u                            # Down factor
-    p = (np.exp(risk_free_rate * dt) - d) / (u - d)  # Risk-neutral probability
+    p = (np.exp(risk_free_rate * dt) - d) / (u - d)  
 
     # Initialize asset price tree
     price_tree = np.zeros((int(steps) + 1, int(steps) + 1))
@@ -515,7 +446,7 @@ def calculate_option_data(form_data):
         call_deltas.append(greeks['Call Greeks']['Delta'])
         put_deltas.append(greeks['Put Greeks']['Delta'])
         vegas.append(greeks['Call Greeks']['Vega'])
-        gammas.append(greeks['Call Greeks']['Gamma'])  # Add gamma calculation
+        gammas.append(greeks['Call Greeks']['Gamma'])  
 
     # Calculate time-based Greeks
     times = np.linspace(0.01, form_data['time_to_maturity'] * 2, 100)
@@ -552,7 +483,7 @@ def calculate_option_data(form_data):
             'call_deltas': call_deltas,
             'put_deltas': put_deltas
         },
-        'gamma_chart_data': {  # Add gamma data to the return
+        'gamma_chart_data': {  
             'stock_prices': stock_prices.tolist(),
             'gammas': gammas
         },
@@ -580,7 +511,7 @@ def index():
         'strike_price': 100,
         'time_to_maturity': 1,
         'volatility': 0.2,
-        'risk_free_rate': float(yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100)  # Convert to float immediately
+        'risk_free_rate': round(float(yf.Ticker('^TNX').history(period='1d')['Close'].iloc[-1]/100), 4)  
     }
 
     if request.method == 'POST':
@@ -590,7 +521,7 @@ def index():
                 'strike_price': float(request.form['strike_price']),
                 'time_to_maturity': float(request.form['time_to_maturity']),
                 'volatility': float(request.form['volatility']),
-                'risk_free_rate': float(request.form['risk_free_rate'])  # Convert to float
+                'risk_free_rate': float(request.form['risk_free_rate']) 
             }
         except ValueError:
             return render_template('index.html', 
@@ -642,9 +573,6 @@ def calculate_implied_volatility(market_price, asset_price, strike_price, time_t
         else:
             vol_low = vol_mid
             
-        # # If we can't converge, return None
-        # if vol_high - vol_low < tolerance:
-        #     return None
     
     return (vol_low + vol_high) / 2
 
