@@ -203,7 +203,7 @@ Calculate prices for American and exotic options using advanced numerical method
 
 Feel free to reach out for collaboration or inquiries:
 
-- **Email**: [seanmealey@example.com](mailto:seankmealey14@gmail.com)
+- **Email**: [seankmealey14@gmail.com](mailto:seankmealey14@gmail.com)
 - **GitHub**: [github.com/seanmealey](https://github.com/seanmealey)
 
 ---
